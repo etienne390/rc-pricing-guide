@@ -1,0 +1,3142 @@
+<!DOCTYPE html>
+<html lang="en-NZ">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Price Helper" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#0D6E52" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Crect width='128' height='128' rx='28' fill='%230D6E52'/%3E%3Cpath d='M36 32h28l32 32-28 28-32-32V32z' fill='%23FFFFFF'/%3E%3Ccircle cx='50' cy='46' r='6' fill='%230D6E52'/%3E%3C/svg%3E" />
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' fill='%230D6E52'/%3E%3Cpath d='M48 44h42l46 46-42 42-46-46V44z' fill='%23FFFFFF'/%3E%3Ccircle cx='68' cy='64' r='9' fill='%230D6E52'/%3E%3C/svg%3E" />
+  <link id="pwaManifestLink" rel="manifest" href="" />
+  <title>Item Price Helper — Resource Recovery Pricing</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Inter:wght@500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Atkinson Hyperlegible"', 'Inter', 'sans-serif'],
+            display: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              bg: '#F8FAFC',
+              card: '#FFFFFF',
+              ink: '#0F172A',
+              muted: '#334155',
+              primary: 'var(--brand-primary, #0D6E52)',
+              primaryHover: 'var(--brand-primary-hover, #09523D)',
+              accent: '#1D4ED8',
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    :root {
+      --brand-primary: #0D6E52;
+      --brand-primary-hover: #09523D;
+      --brand-primary-border: #064E3B;
+      --brand-header-text: #FFFFFF;
+    }
+    * {
+      -webkit-tap-highlight-color: transparent;
+    }
+    html, body {
+      height: 100%;
+      min-height: 100dvh;
+      margin: 0;
+      padding: 0;
+      overscroll-behavior-y: none;
+    }
+    button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+      outline: 4px solid #F59E0B;
+      outline-offset: 2px;
+    }
+    .touch-target-lg {
+      min-height: 68px;
+    }
+    .touch-target-xl {
+      min-height: 84px;
+    }
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #F1F5F9;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #94A3B8;
+      border-radius: 9999px;
+    }
+  </style>
+</head>
+<body class="bg-brand-bg sm:bg-slate-200 text-slate-900 font-sans antialiased min-h-[100dvh] h-[100dvh] sm:h-auto sm:min-h-screen flex flex-col items-center justify-start sm:py-6">
+
+  <!-- App Container: Full-Screen Edge-to-Edge on Mobile, Handheld Scanner Proportion on Desktop -->
+  <div id="appShell" class="w-full max-w-none sm:max-w-lg bg-brand-bg min-h-[100dvh] h-[100dvh] sm:h-auto sm:min-h-[840px] rounded-none sm:rounded-3xl shadow-none sm:shadow-2xl border-0 sm:border-4 sm:border-slate-300 flex flex-col overflow-hidden relative">
+
+    <!-- Top Navigation Bar (Dynamic Custom Business Logo & Brand Colour) -->
+    <header id="appHeader" style="background-color: var(--brand-primary); color: var(--brand-header-text);" class="px-4 py-3.5 pt-[max(0.875rem,env(safe-area-inset-top))] flex items-center justify-between shadow-md shrink-0 transition-colors">
+      <button type="button" onclick="resetToHome()" class="flex items-center gap-3 text-left rounded-xl p-1 hover:bg-black/10 transition active:scale-95 min-w-0 flex-1 mr-2" aria-label="Go to Home Screen">
+        <img id="headerLogoImg" src="" alt="Business Logo" class="hidden h-12 max-w-[128px] rounded-xl bg-white p-1 object-contain shadow-sm shrink-0" />
+        <div id="headerDefaultIcon" class="w-11 h-11 rounded-2xl bg-white text-brand-primary flex items-center justify-center text-2xl font-black shadow-sm shrink-0">
+          <i class="fa-solid fa-tag"></i>
+        </div>
+        <div class="min-w-0">
+          <h1 id="headerShopTitle" class="font-display font-extrabold text-lg sm:text-xl leading-tight tracking-tight truncate">Item Price Helper</h1>
+          <p id="shopTierBadge" class="text-xs font-semibold opacity-90 uppercase tracking-wider truncate">Standard Secondhand • NZD</p>
+        </div>
+      </button>
+
+      <div class="flex items-center gap-2 shrink-0">
+        <!-- Today's Priced Items Counter Button -->
+        <button type="button" onclick="openHistoryDrawer()" class="min-w-[56px] min-h-[56px] px-3 rounded-2xl bg-black/15 hover:bg-black/25 border-2 border-white/30 flex flex-col items-center justify-center transition active:scale-95" aria-label="View Items Priced Today">
+          <span id="todayCountBadge" class="text-lg font-black leading-none">0</span>
+          <span class="text-[11px] font-bold uppercase tracking-tight mt-0.5">Today</span>
+        </button>
+
+        <!-- Manager Settings Locked Gear Button -->
+        <button type="button" onclick="requestManagerAccess()" class="w-14 h-14 rounded-2xl bg-black/15 hover:bg-black/25 border-2 border-white/30 flex flex-col items-center justify-center transition active:scale-95 relative" aria-label="Manager Settings (PIN Protected)">
+          <i class="fa-solid fa-gear text-lg"></i>
+          <span class="text-[9px] font-extrabold uppercase tracking-wider mt-0.5 flex items-center gap-0.5">
+            <i class="fa-solid fa-lock text-[8px]"></i> PIN
+          </span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Visual Progress Stepper -->
+    <div id="stepIndicator" class="hidden bg-white border-b-2 border-slate-200 px-3 py-2.5 shrink-0">
+      <div class="flex items-center justify-between text-[11px] sm:text-xs font-extrabold uppercase tracking-wider text-slate-600">
+        <span id="step1Pill" class="px-2 py-1 rounded-full bg-emerald-100 text-emerald-900">1. Photos</span>
+        <i class="fa-solid fa-chevron-right text-slate-400 text-[10px]"></i>
+        <span id="step2Pill" class="px-2 py-1 rounded-full bg-slate-100 text-slate-500">2. Size</span>
+        <i class="fa-solid fa-chevron-right text-slate-400 text-[10px]"></i>
+        <span id="step3Pill" class="px-2 py-1 rounded-full bg-slate-100 text-slate-500">3. Condition</span>
+        <i class="fa-solid fa-chevron-right text-slate-400 text-[10px]"></i>
+        <span id="step4Pill" class="px-2 py-1 rounded-full bg-slate-100 text-slate-500">4. Price</span>
+      </div>
+    </div>
+
+    <!-- Main Dynamic Content Area -->
+    <main class="flex-1 flex flex-col p-4 sm:p-5 overflow-y-auto space-y-5">
+
+      <!-- =========================================================
+           SCREEN 1: MULTI-ANGLE PHOTO CAPTURE SCREEN
+           ========================================================= -->
+      <section id="screenHome" class="flex-1 flex flex-col justify-between space-y-4">
+        <div class="bg-white rounded-3xl p-4 sm:p-5 border-2 border-slate-300 shadow-sm space-y-2">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <span class="inline-block px-3 py-1 rounded-full bg-emerald-100 text-emerald-900 text-xs sm:text-sm font-extrabold mb-1.5">
+                Kia ora! Multi-Angle Photo Check
+              </span>
+              <h2 class="font-display font-black text-2xl sm:text-3xl text-slate-900 leading-snug">
+                Tap each side you want to photograph
+              </h2>
+            </div>
+            <button type="button" onclick="speakPhotoInstructions()"
+              class="shrink-0 w-16 h-16 rounded-2xl bg-amber-100 hover:bg-amber-200 border-2 border-amber-400 text-amber-950 flex flex-col items-center justify-center shadow-sm active:scale-95 transition"
+              aria-label="Read instructions aloud">
+              <i class="fa-solid fa-volume-high text-xl"></i>
+              <span class="text-[11px] font-extrabold mt-0.5">Listen</span>
+            </button>
+          </div>
+          <p class="text-base text-slate-700 font-semibold leading-snug">
+            Take a photo of the <strong>Front</strong> first, then add <strong>Rear, Left, Right, Top, Bottom</strong>, or <strong>Label</strong> photos so we never underprice!
+          </p>
+        </div>
+
+        <!-- Hidden Camera & Gallery Inputs -->
+        <input type="file" id="angleCameraInput" accept="image/*" capture="environment" class="hidden" onchange="handleAngleImageSelected(event)" />
+        <input type="file" id="angleUploadInput" accept="image/*" class="hidden" onchange="handleAngleImageSelected(event)" />
+
+        <!-- Dedicated Large Touch Targets for Every Angle + Label -->
+        <div class="space-y-2.5">
+          <div class="flex items-center justify-between px-1">
+            <span class="text-xs font-extrabold uppercase tracking-wider text-slate-600">
+              Tap a box to take photo (<span id="capturedAnglesCount">0</span> added)
+            </span>
+            <button type="button" id="clearAllPhotosBtn" onclick="clearAllCapturedAngles()" class="hidden text-xs font-extrabold text-red-700 hover:underline px-2 py-1">
+              Clear All
+            </button>
+          </div>
+
+          <div id="angleSlotsGrid" class="grid grid-cols-2 gap-3"></div>
+
+          <!-- Secondary Upload from Gallery Helper -->
+          <div class="flex items-center justify-between gap-2 bg-white border-2 border-slate-300 rounded-2xl px-3.5 py-2.5">
+            <span class="text-xs sm:text-sm font-bold text-slate-700">Or upload from gallery:</span>
+            <select id="uploadAngleSelect" class="min-h-[44px] px-2.5 rounded-xl border-2 border-slate-300 bg-slate-50 font-extrabold text-xs sm:text-sm text-slate-900">
+              <option value="front">Front</option>
+              <option value="rear">Rear</option>
+              <option value="left">Left Side</option>
+              <option value="right">Right Side</option>
+              <option value="top">Top</option>
+              <option value="bottom">Bottom</option>
+              <option value="label">Brand / Size Label</option>
+            </select>
+            <button type="button" onclick="triggerGalleryUploadForSelectedAngle()"
+              class="min-h-[48px] px-3.5 rounded-xl bg-blue-100 hover:bg-blue-200 border-2 border-blue-400 text-blue-950 font-extrabold text-xs sm:text-sm flex items-center gap-1.5 active:scale-95 transition">
+              <i class="fa-solid fa-image"></i>
+              <span>Upload</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Giant Primary Action Button Once At Least 1 Photo is Captured -->
+        <div id="startResearchActionArea" class="hidden pt-1">
+          <button type="button" onclick="proceedToAnalysis()"
+            style="border-bottom-color: var(--brand-primary-border);"
+            class="w-full min-h-[88px] rounded-3xl bg-brand-primary hover:bg-brand-primaryHover text-white p-5 shadow-xl border-b-8 flex items-center justify-center gap-4 transition transform active:translate-y-1">
+            <div class="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center text-3xl shrink-0">
+              <i class="fa-solid fa-magnifying-glass-dollar"></i>
+            </div>
+            <div class="text-left">
+              <div class="font-display font-black text-xl sm:text-2xl leading-tight">
+                Research &amp; Check Price
+              </div>
+              <div id="startResearchSubtext" class="text-white/90 text-sm font-bold">
+                Using 1 photo • Searches NZ values
+              </div>
+            </div>
+          </button>
+        </div>
+      </section>
+
+      <!-- =========================================================
+           SCREEN 2: DEEP MARKET RESEARCH & ANALYZING LOADING SCREEN
+           ========================================================= -->
+      <section id="screenLoading" class="hidden flex-1 flex flex-col items-center justify-center text-center p-5 space-y-6">
+        <div id="loadingThumbnailsStrip" class="flex flex-wrap items-center justify-center gap-2.5 max-w-sm"></div>
+
+        <div class="relative w-20 h-20 rounded-full bg-emerald-100 border-4 border-brand-primary flex items-center justify-center shadow-md">
+          <div class="w-12 h-12 border-4 border-brand-primary border-t-amber-500 rounded-full animate-spin"></div>
+        </div>
+
+        <div class="space-y-2 max-w-sm">
+          <span class="inline-block px-3 py-1 rounded-full bg-blue-100 text-blue-950 text-xs font-extrabold uppercase tracking-wider">
+            <i class="fa-solid fa-globe mr-1"></i> Checking NZ Retail &amp; Trade Me Values
+          </span>
+          <h2 id="loadingHeadingText" class="font-display font-black text-2xl sm:text-3xl text-slate-900">
+            Researching your item...
+          </h2>
+          <p id="loadingSubText" class="text-lg text-slate-700 font-semibold">
+            Inspecting all angles, reading labels, and checking NZ secondhand prices so we don't price too low.
+          </p>
+        </div>
+
+        <button type="button" onclick="resetToHome()" class="touch-target-lg px-6 py-3 rounded-2xl bg-white border-2 border-slate-400 text-slate-800 font-extrabold text-lg">
+          Cancel
+        </button>
+      </section>
+
+      <!-- =========================================================
+           SCREEN 3: SMART SIZING PROMPT SCREEN
+           ========================================================= -->
+      <section id="screenSize" class="hidden flex-1 flex flex-col justify-between space-y-5">
+        <div class="space-y-4">
+          <div class="bg-white rounded-3xl p-4 border-2 border-slate-300 shadow-sm flex items-center gap-3">
+            <div class="flex items-center gap-2 shrink-0">
+              <img id="sizeItemImg" src="" alt="Item photo" class="w-20 h-20 rounded-2xl object-cover border-2 border-slate-200" />
+              <img id="sizeLabelImg" src="" alt="Label photo" class="hidden w-14 h-20 rounded-2xl object-cover border-2 border-blue-500" />
+            </div>
+            <div class="flex-1 min-w-0">
+              <span class="text-xs font-extrabold uppercase tracking-wider text-brand-primary">Item Found</span>
+              <h2 id="sizeItemTitle" class="font-display font-black text-2xl text-slate-900 truncate">Winter Jacket</h2>
+              <p id="sizeItemCategory" class="text-base font-bold text-slate-600">Clothing</p>
+            </div>
+            <button type="button" onclick="speakSizePrompt()"
+              class="shrink-0 w-16 h-16 rounded-2xl bg-amber-100 hover:bg-amber-200 border-2 border-amber-400 text-amber-950 flex flex-col items-center justify-center active:scale-95 transition"
+              aria-label="Listen to size question">
+              <i class="fa-solid fa-volume-high text-xl"></i>
+              <span class="text-[11px] font-extrabold mt-0.5">Listen</span>
+            </button>
+          </div>
+
+          <div id="sizeDetectedCallout" class="hidden bg-emerald-100 border-2 border-emerald-500 rounded-2xl px-4 py-3 flex items-center gap-3">
+            <i class="fa-solid fa-tag text-emerald-800 text-xl"></i>
+            <span id="sizeDetectedText" class="font-extrabold text-emerald-950 text-base">Tag says Size L — tap to confirm!</span>
+          </div>
+
+          <div class="bg-blue-50 border-2 border-blue-300 rounded-3xl p-5 text-center space-y-1">
+            <div class="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-blue-600 text-white text-2xl mb-1">
+              <i class="fa-solid fa-ruler-combined"></i>
+            </div>
+            <h3 id="sizeQuestionHeading" class="font-display font-black text-2xl sm:text-3xl text-slate-900">
+              What size is it?
+            </h3>
+            <p id="sizeQuestionHint" class="text-lg font-semibold text-slate-700">
+              Check the label or pick the closest size
+            </p>
+          </div>
+
+          <div id="sizeOptionsGrid" class="grid grid-cols-2 gap-3"></div>
+        </div>
+
+        <div class="space-y-3 pt-2">
+          <button type="button" onclick="selectSize(null)"
+            class="w-full touch-target-lg rounded-2xl bg-slate-200 hover:bg-slate-300 border-2 border-slate-400 text-slate-900 font-extrabold text-xl flex items-center justify-center gap-3 active:scale-98 transition">
+            <i class="fa-solid fa-forward"></i>
+            <span>Skip / Not Sure</span>
+          </button>
+
+          <button type="button" onclick="showScreen('home')"
+            class="w-full min-h-[56px] rounded-2xl bg-white hover:bg-slate-100 border-2 border-slate-300 text-slate-700 font-bold text-base flex items-center justify-center gap-2">
+            <i class="fa-solid fa-arrow-left"></i>
+            <span>Edit or Add More Photos</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- =========================================================
+           SCREEN 4: 3 CONDITION PRICE CHOICES SCREEN
+           ========================================================= -->
+      <section id="screenCondition" class="hidden flex-1 flex flex-col justify-between space-y-4">
+        <div class="bg-white rounded-3xl p-4 border-2 border-slate-300 shadow-sm space-y-2.5">
+          <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2 shrink-0">
+              <img id="condItemImg" src="" alt="Identified item" class="w-20 h-20 rounded-2xl object-cover border-2 border-slate-200" />
+              <img id="condLabelImg" src="" alt="Label photo" class="hidden w-14 h-20 rounded-2xl object-cover border-2 border-blue-500" />
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex flex-wrap items-center gap-1.5 mb-1">
+                <span id="condCategoryBadge" class="px-2.5 py-0.5 rounded-full bg-slate-200 text-slate-800 text-xs font-extrabold uppercase">Category</span>
+                <span id="condSizeBadge" class="hidden px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-900 text-xs font-extrabold uppercase">Size: L</span>
+                <span id="condBrandBadge" class="hidden px-2.5 py-0.5 rounded-full bg-purple-100 text-purple-950 border border-purple-300 text-xs font-extrabold uppercase">Brand</span>
+                <span id="condAnglesCountBadge" class="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-900 text-xs font-extrabold uppercase">1 Photo</span>
+              </div>
+              <h2 id="condItemTitle" class="font-display font-black text-2xl text-slate-900 leading-tight">Wooden Chair</h2>
+            </div>
+            <button type="button" onclick="speakConditionOptions()"
+              class="shrink-0 w-16 h-16 rounded-2xl bg-amber-100 hover:bg-amber-200 border-2 border-amber-400 text-amber-950 flex flex-col items-center justify-center active:scale-95 transition"
+              aria-label="Read all 3 prices aloud">
+              <i class="fa-solid fa-volume-high text-xl"></i>
+              <span class="text-[11px] font-extrabold mt-0.5">Listen</span>
+            </button>
+          </div>
+
+          <!-- Market Value & Research Guardrail Box -->
+          <div id="condResearchBox" class="bg-emerald-50 border-2 border-emerald-400 rounded-2xl px-3.5 py-2.5 space-y-1">
+            <div class="flex items-center justify-between gap-2">
+              <span class="text-xs font-extrabold uppercase tracking-wider text-emerald-900 flex items-center gap-1.5">
+                <i class="fa-solid fa-shield-halved text-emerald-700"></i>
+                <span>NZ Market Value Check</span>
+              </span>
+              <span id="condRetailEstimateBadge" class="px-2.5 py-0.5 rounded-full bg-emerald-700 text-white text-xs font-extrabold">
+                New Retail: ~$120 NZD
+              </span>
+            </div>
+            <p id="condResearchSummary" class="text-sm font-bold text-slate-800 leading-snug">
+              Checked NZ retail &amp; secondhand listings so this item is not priced too low.
+            </p>
+            <div id="condSourcesWrap" class="hidden flex flex-wrap gap-1.5 pt-1"></div>
+          </div>
+
+          <div id="condLabelNoteBox" class="hidden bg-purple-50 border-2 border-purple-300 rounded-2xl px-3.5 py-2.5 flex items-center gap-2.5">
+            <i class="fa-solid fa-tag text-purple-700 text-lg shrink-0"></i>
+            <p id="condLabelNoteText" class="text-sm sm:text-base font-extrabold text-purple-950 leading-snug">
+              Tag says 100% Merino Wool — warm and popular!
+            </p>
+          </div>
+        </div>
+
+        <div class="px-1">
+          <h3 class="font-display font-black text-xl sm:text-2xl text-slate-900">
+            Tap the condition that matches all sides:
+          </h3>
+        </div>
+
+        <div class="space-y-3.5 flex-1">
+          <!-- 1. POOR CONDITION -->
+          <button type="button" onclick="chooseCondition('fair')"
+            class="w-full rounded-3xl bg-amber-50 hover:bg-amber-100 border-4 border-amber-500 p-4 sm:p-5 text-left shadow-md flex items-center justify-between gap-4 transition transform active:scale-98">
+            <div class="flex items-center gap-4 min-w-0">
+              <div class="w-16 h-16 rounded-2xl bg-amber-500 text-white flex items-center justify-center text-3xl shrink-0 shadow-sm">
+                <i class="fa-solid fa-heart-crack"></i>
+              </div>
+              <div class="min-w-0">
+                <div class="font-display font-black text-xl sm:text-2xl text-amber-950 leading-tight">
+                  Poor Condition
+                </div>
+                <div class="text-sm font-extrabold uppercase tracking-wide text-amber-800 mb-1">
+                  Heavy Wear or Damage
+                </div>
+                <p id="tipFair" class="text-base font-semibold text-slate-800 leading-snug">
+                  Scuffs, marks, or well-worn
+                </p>
+              </div>
+            </div>
+            <div class="shrink-0 bg-white border-2 border-amber-500 rounded-2xl px-4 py-3 text-center min-w-[92px] shadow-sm">
+              <span class="block text-xs font-extrabold text-amber-800 uppercase">Price</span>
+              <span id="priceFairDisplay" class="font-display font-black text-3xl text-slate-900">$5</span>
+            </div>
+          </button>
+
+          <!-- 2. GOOD EVERYDAY USE -->
+          <button type="button" onclick="chooseCondition('good')"
+            class="w-full rounded-3xl bg-blue-50 hover:bg-blue-100 border-4 border-blue-600 p-4 sm:p-5 text-left shadow-md flex items-center justify-between gap-4 transition transform active:scale-98">
+            <div class="flex items-center gap-4 min-w-0">
+              <div class="w-16 h-16 rounded-2xl bg-blue-600 text-white flex items-center justify-center text-3xl shrink-0 shadow-sm">
+                <i class="fa-solid fa-thumbs-up"></i>
+              </div>
+              <div class="min-w-0">
+                <div class="font-display font-black text-xl sm:text-2xl text-blue-950 leading-tight">
+                  Good Everyday Use
+                </div>
+                <div class="text-sm font-extrabold uppercase tracking-wide text-blue-800 mb-1">
+                  Good Condition
+                </div>
+                <p id="tipGood" class="text-base font-semibold text-slate-800 leading-snug">
+                  Clean, works well, normal use
+                </p>
+              </div>
+            </div>
+            <div class="shrink-0 bg-white border-2 border-blue-600 rounded-2xl px-4 py-3 text-center min-w-[92px] shadow-sm">
+              <span class="block text-xs font-extrabold text-blue-800 uppercase">Price</span>
+              <span id="priceGoodDisplay" class="font-display font-black text-3xl text-slate-900">$12</span>
+            </div>
+          </button>
+
+          <!-- 3. LIKE NEW / GREAT -->
+          <button type="button" onclick="chooseCondition('likeNew')"
+            class="w-full rounded-3xl bg-emerald-50 hover:bg-emerald-100 border-4 border-emerald-600 p-4 sm:p-5 text-left shadow-md flex items-center justify-between gap-4 transition transform active:scale-98">
+            <div class="flex items-center gap-4 min-w-0">
+              <div class="w-16 h-16 rounded-2xl bg-emerald-600 text-white flex items-center justify-center text-3xl shrink-0 shadow-sm">
+                <i class="fa-solid fa-star"></i>
+              </div>
+              <div class="min-w-0">
+                <div class="font-display font-black text-xl sm:text-2xl text-emerald-950 leading-tight">
+                  Like New / Great
+                </div>
+                <div class="text-sm font-extrabold uppercase tracking-wide text-emerald-800 mb-1">
+                  Great Condition
+                </div>
+                <p id="tipLikeNew" class="text-base font-semibold text-slate-800 leading-snug">
+                  Barely used, looks almost new
+                </p>
+              </div>
+            </div>
+            <div class="shrink-0 bg-white border-2 border-emerald-600 rounded-2xl px-4 py-3 text-center min-w-[92px] shadow-sm">
+              <span class="block text-xs font-extrabold text-emerald-800 uppercase">Price</span>
+              <span id="priceLikeNewDisplay" class="font-display font-black text-3xl text-slate-900">$20</span>
+            </div>
+          </button>
+        </div>
+
+        <div class="pt-1 flex gap-3">
+          <button type="button" id="backToSizeBtn" onclick="goBackToSize()"
+            class="hidden flex-1 touch-target-lg rounded-2xl bg-white hover:bg-slate-100 border-2 border-slate-400 text-slate-800 font-extrabold text-lg items-center justify-center gap-2">
+            <i class="fa-solid fa-ruler"></i>
+            <span>Change Size</span>
+          </button>
+          <button type="button" onclick="showScreen('home')"
+            class="flex-1 touch-target-lg rounded-2xl bg-white hover:bg-slate-100 border-2 border-slate-400 text-slate-800 font-extrabold text-lg flex items-center justify-center gap-2">
+            <i class="fa-solid fa-camera"></i>
+            <span>Edit Photos</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- =========================================================
+           SCREEN 5: FINAL PRICE TAG CONFIRMATION SCREEN
+           ========================================================= -->
+      <section id="screenFinalTag" class="hidden flex-1 flex flex-col justify-between space-y-5">
+        <div class="bg-emerald-700 text-white rounded-3xl p-4 flex items-center justify-between shadow-md">
+          <div class="flex items-center gap-3">
+            <div class="w-12 h-12 rounded-2xl bg-white text-emerald-700 flex items-center justify-center text-2xl font-black">
+              <i class="fa-solid fa-check"></i>
+            </div>
+            <div>
+              <h2 class="font-display font-black text-2xl leading-tight">Write This Price Tag</h2>
+              <p class="text-emerald-100 text-sm font-bold">Saved to today's shop log</p>
+            </div>
+          </div>
+          <button type="button" onclick="speakFinalPriceTag()"
+            class="w-16 h-16 rounded-2xl bg-amber-300 hover:bg-amber-200 text-slate-950 flex flex-col items-center justify-center font-extrabold shadow-sm active:scale-95 transition"
+            aria-label="Read final price tag aloud">
+            <i class="fa-solid fa-volume-high text-xl"></i>
+            <span class="text-[11px] mt-0.5">Listen</span>
+          </button>
+        </div>
+
+        <div class="bg-white rounded-3xl border-4 border-slate-900 shadow-xl overflow-hidden relative">
+          <div style="background-color: var(--brand-primary); color: var(--brand-header-text);" class="px-5 py-3 flex items-center justify-between">
+            <span id="tagShopNameHeader" class="font-extrabold tracking-widest uppercase text-sm truncate pr-2">Resource Recovery Shop</span>
+            <span class="w-5 h-5 rounded-full bg-slate-200 border-2 border-slate-500 inline-block shrink-0"></span>
+          </div>
+
+          <div class="p-6 text-center space-y-4">
+            <div class="flex flex-col items-center gap-3">
+              <div class="flex items-center justify-center gap-3">
+                <img id="finalItemImg" src="" alt="Priced item" class="w-24 h-24 rounded-2xl object-cover border-2 border-slate-300 shadow-sm" />
+                <img id="finalLabelImg" src="" alt="Item label" class="hidden w-20 h-24 rounded-2xl object-cover border-2 border-blue-500 shadow-sm" />
+              </div>
+              <div>
+                <h3 id="finalItemName" class="font-display font-black text-2xl sm:text-3xl text-slate-900">
+                  Winter Jacket
+                </h3>
+                <div class="flex flex-wrap items-center justify-center gap-2 mt-2">
+                  <span id="finalConditionBadge" class="px-4 py-1.5 rounded-full bg-blue-100 text-blue-950 border-2 border-blue-500 font-extrabold text-base">
+                    Good Condition
+                  </span>
+                  <span id="finalSizeBadge" class="hidden px-4 py-1.5 rounded-full bg-slate-100 text-slate-900 border-2 border-slate-400 font-extrabold text-base">
+                    Size: L
+                  </span>
+                  <span id="finalBrandBadge" class="hidden px-4 py-1.5 rounded-full bg-purple-100 text-purple-950 border-2 border-purple-400 font-extrabold text-base">
+                    Icebreaker
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="border-t-4 border-dashed border-slate-300 my-2"></div>
+
+            <div class="py-2">
+              <span class="block text-sm font-extrabold uppercase tracking-widest text-slate-500">NZD Price</span>
+              <div id="finalPriceBig" class="font-display font-black text-6xl sm:text-7xl text-brand-primary tracking-tight mt-1">
+                $12.00
+              </div>
+            </div>
+
+            <div class="flex flex-col items-center justify-center gap-2 pt-1">
+              <div class="flex items-center justify-center gap-3">
+                <button type="button" id="decreasePriceBtn" onclick="handleProtectedPriceAdjust(-1)" class="min-w-[68px] min-h-[56px] px-4 rounded-2xl bg-slate-100 hover:bg-slate-200 border-2 border-slate-300 font-black text-xl text-slate-800 active:scale-95" aria-label="Decrease price">
+                  -$1
+                </button>
+                <span class="text-sm font-bold text-slate-500 flex items-center gap-1">
+                  <i id="priceAdjustLockIcon" class="fa-solid fa-lock text-xs text-slate-400"></i>
+                  <span>Adjust price</span>
+                </span>
+                <button type="button" id="increasePriceBtn" onclick="handleProtectedPriceAdjust(1)" class="min-w-[68px] min-h-[56px] px-4 rounded-2xl bg-slate-100 hover:bg-slate-200 border-2 border-slate-300 font-black text-xl text-slate-800 active:scale-95" aria-label="Increase price">
+                  +$1
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-3 pt-1">
+          <button type="button" onclick="resetToHome()"
+            style="border-bottom-color: var(--brand-primary-border);"
+            class="w-full touch-target-xl rounded-3xl bg-brand-primary hover:bg-brand-primaryHover text-white p-5 shadow-xl border-b-8 font-display font-black text-2xl flex items-center justify-center gap-3 transition transform active:translate-y-1">
+            <i class="fa-solid fa-camera text-2xl"></i>
+            <span>Price Next Item</span>
+          </button>
+
+          <button type="button" onclick="backToConditionChoices()"
+            class="w-full min-h-[56px] rounded-2xl bg-white hover:bg-slate-100 border-2 border-slate-300 text-slate-800 font-extrabold text-base flex items-center justify-center gap-2">
+            <i class="fa-solid fa-arrow-left"></i>
+            <span>Pick Different Condition</span>
+          </button>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- =========================================================
+         DRAWER 1: TODAY'S PRICED ITEMS LOG
+         ========================================================= -->
+    <div id="historyDrawer" class="hidden absolute inset-0 bg-slate-900/60 z-50 flex flex-col justify-end">
+      <div class="bg-white rounded-t-3xl max-h-[88%] flex flex-col shadow-2xl border-t-4 border-brand-primary">
+        <div class="p-5 border-b-2 border-slate-200 flex items-center justify-between bg-emerald-900 text-white rounded-t-2xl">
+          <div>
+            <h2 class="font-display font-black text-xl">Items Priced Today</h2>
+            <p id="historyTotalSummary" class="text-xs font-semibold text-emerald-100">0 items • Total value: $0.00 NZD</p>
+          </div>
+          <button type="button" onclick="closeHistoryDrawer()" class="w-12 h-12 rounded-2xl bg-white/15 hover:bg-white/25 text-white text-xl flex items-center justify-center" aria-label="Close Today's Log">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <div id="historyList" class="p-4 overflow-y-auto space-y-2.5 flex-1"></div>
+
+        <div class="p-4 border-t-2 border-slate-200 bg-slate-50 flex gap-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
+          <button type="button" onclick="requestClearTodayHistory()" class="min-h-[56px] px-4 rounded-2xl bg-red-50 hover:bg-red-100 border-2 border-red-300 text-red-800 font-extrabold text-sm flex items-center gap-1.5">
+            <i class="fa-solid fa-lock text-xs"></i>
+            <span>Clear Log</span>
+          </button>
+          <button type="button" onclick="closeHistoryDrawer()" class="flex-1 min-h-[56px] rounded-2xl bg-brand-primary text-white font-extrabold text-lg">
+            Done
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================================================
+         FULL-SCREEN LOCK: APPROVED WORK DEVICES ONLY
+         ========================================================= -->
+    <div id="workDeviceLockOverlay" class="absolute inset-0 bg-slate-900 z-40 flex flex-col justify-between p-5 sm:p-6 text-white overflow-y-auto">
+      <div class="flex items-center justify-between pt-[max(0.5rem,env(safe-area-inset-top))]">
+        <div class="flex items-center gap-2.5">
+          <div style="background-color: var(--brand-primary);" class="w-11 h-11 rounded-2xl text-white flex items-center justify-center text-xl shadow-md border-2 border-white/20">
+            <i class="fa-solid fa-shield-halved"></i>
+          </div>
+          <div>
+            <div id="lockScreenShopTitle" class="font-display font-extrabold text-base leading-tight">Item Price Helper</div>
+            <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Staff Device Guard</div>
+          </div>
+        </div>
+
+        <button type="button" onclick="speakDeviceLockNotice()"
+          class="w-16 h-16 rounded-2xl bg-amber-300 hover:bg-amber-200 text-slate-950 flex flex-col items-center justify-center font-extrabold shadow-md active:scale-95 transition"
+          aria-label="Read lock message aloud">
+          <i class="fa-solid fa-volume-high text-xl"></i>
+          <span class="text-[11px] mt-0.5">Listen</span>
+        </button>
+      </div>
+
+      <div class="my-auto py-6 text-center space-y-4">
+        <div class="w-24 h-24 mx-auto rounded-3xl bg-amber-400/15 border-4 border-amber-400 text-amber-300 flex items-center justify-center text-5xl shadow-lg">
+          <i id="lockScreenMainIcon" class="fa-solid fa-tablet-screen-button"></i>
+        </div>
+
+        <span id="lockScreenPill" class="inline-block px-4 py-1.5 rounded-full bg-amber-400 text-slate-950 text-xs font-black uppercase tracking-wider">
+          Approved Work Devices Only
+        </span>
+
+        <h2 id="lockScreenHeading" class="font-display font-black text-3xl sm:text-4xl text-white leading-tight">
+          Use a Shop Work Device
+        </h2>
+
+        <p id="lockScreenMessage" class="text-lg font-semibold text-slate-200 leading-relaxed max-w-sm mx-auto">
+          Kia ora! This pricing tool is locked to official shop tablets and work phones so it cannot be used on personal devices or outside work.
+        </p>
+      </div>
+
+      <div id="managerAuthorizeCard" class="bg-slate-800/95 border-2 border-slate-600 rounded-3xl p-4 sm:p-5 space-y-3.5 pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-xl">
+        <div class="flex items-center gap-2 text-amber-300 font-extrabold text-xs uppercase tracking-wider">
+          <i class="fa-solid fa-user-shield"></i>
+          <span>Manager One-Time Work Device Setup</span>
+        </div>
+
+        <div>
+          <label for="newDeviceNameInput" class="block text-xs font-bold text-slate-300 mb-1.5">
+            Name this shop tablet or work phone:
+          </label>
+          <input type="text" id="newDeviceNameInput" maxlength="32" placeholder="e.g., Sorting Room Tablet 1"
+            class="w-full min-h-[52px] px-4 rounded-2xl bg-slate-900 border-2 border-slate-500 text-white font-extrabold text-base placeholder:text-slate-500" />
+        </div>
+
+        <button type="button" onclick="requestApproveThisDevice()"
+          style="background-color: var(--brand-primary);"
+          class="w-full touch-target-lg rounded-2xl hover:opacity-95 text-white font-display font-black text-lg sm:text-xl px-4 py-3.5 shadow-lg border-2 border-white/20 flex items-center justify-center gap-3 active:scale-98 transition">
+          <i class="fa-solid fa-key text-amber-300"></i>
+          <span>Approve Work Device (PIN)</span>
+        </button>
+      </div>
+
+      <div id="hoursOverrideCard" class="hidden bg-slate-800/95 border-2 border-slate-600 rounded-3xl p-4 space-y-3 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
+        <p class="text-xs font-bold text-slate-300 text-center">
+          This work device is approved, but the shop is currently outside set work hours.
+        </p>
+        <button type="button" onclick="requestManagerHoursOverride()"
+          class="w-full min-h-[56px] rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-display font-black text-base flex items-center justify-center gap-2 active:scale-95 transition">
+          <i class="fa-solid fa-unlock-keyhole"></i>
+          <span>Manager Override for This Session (PIN)</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- =========================================================
+         MODAL: MANAGER 4-DIGIT PIN KEYPAD LOCK
+         ========================================================= -->
+    <div id="pinLockModal" class="hidden absolute inset-0 bg-slate-950/75 z-50 flex items-center justify-center p-4">
+      <div class="w-full max-w-sm bg-white rounded-3xl border-4 border-slate-800 shadow-2xl overflow-hidden">
+        <div class="bg-slate-900 text-white px-5 py-4 flex items-center justify-between">
+          <div class="flex items-center gap-2.5">
+            <div class="w-10 h-10 rounded-xl bg-amber-400 text-slate-950 flex items-center justify-center text-lg">
+              <i class="fa-solid fa-lock"></i>
+            </div>
+            <div>
+              <h2 class="font-display font-black text-lg leading-tight">Manager PIN Required</h2>
+              <p id="pinModalSubtitle" class="text-xs font-semibold text-slate-300">Enter 4-digit PIN to unlock settings</p>
+            </div>
+          </div>
+          <button type="button" onclick="closePinModal()" class="w-11 h-11 rounded-xl bg-white/15 hover:bg-white/25 text-white flex items-center justify-center" aria-label="Close PIN Keypad">
+            <i class="fa-solid fa-xmark text-lg"></i>
+          </button>
+        </div>
+
+        <div class="p-5 space-y-4">
+          <div class="flex items-center justify-center gap-4 py-2">
+            <span id="pinDot0" class="w-5 h-5 rounded-full border-2 border-slate-400 bg-slate-100 transition"></span>
+            <span id="pinDot1" class="w-5 h-5 rounded-full border-2 border-slate-400 bg-slate-100 transition"></span>
+            <span id="pinDot2" class="w-5 h-5 rounded-full border-2 border-slate-400 bg-slate-100 transition"></span>
+            <span id="pinDot3" class="w-5 h-5 rounded-full border-2 border-slate-400 bg-slate-100 transition"></span>
+          </div>
+
+          <p id="pinErrorMsg" class="hidden text-center text-sm font-extrabold text-red-700 bg-red-50 border border-red-300 rounded-xl py-1.5">
+            Wrong PIN — please try again
+          </p>
+
+          <div class="grid grid-cols-3 gap-2.5">
+            <button type="button" onclick="enterPinDigit('1')" class="min-h-[60px] rounded-2xl bg-slate-100 hover:bg-slate-200 border-2 border-slate-300 font-display font-black text-2xl text-slate-900 active:scale-95">1</button>
+            <button type="button" onclick="enterPinDigit('2')" class="min-h-[60px] rounded-2xl bg-slate-100 hover:bg-slate-200 border-2 border-slate-300 font-display font-black text-2xl text-slate-900 active:scale-95">2</button>
+            <button type="button" onclick="enterPinDigit('3')" class="min-h-[60px] rounded-2xl bg-slate-100 hover:bg-slate-200 border-2 border-slate-300 font-display font-black text-2xl text-slate-900 active:scale-95">3</button>
+            <button type="button" onclick="enterPinDigit('4')" class="min-h-[60px] rounded-2xl bg-slate-100 hover:bg-slate-200 border-2 border-slate-300 font-display font-black text-2xl text-slate-900 active:scale-95">4</button>
+            <button type="button" onclick="enterPinDigit('5')" class="min-h-[60px] rounded-2xl bg-slate-100 hover:bg-slate-200 border-2 border-slate-300 font-display font-black text-2xl text-slate-900 active:scale-95">5</button>
+            <button type="button" onclick="enterPinDigit('6')" class="min-h-[60px] rounded-2xl bg-slate-100 hover:bg-slate-200 border-2 border-slate-300 font-display font-black text-2xl text-slate-900 active:scale-95">6</button>
+            <button type="button" onclick="enterPinDigit('7')" class="min-h-[60px] rounded-2xl bg-slate-100 hover:bg-slate-200 border-2 border-slate-300 font-display font-black text-2xl text-slate-900 active:scale-95">7</button>
+            <button type="button" onclick="enterPinDigit('8')" class="min-h-[60px] rounded-2xl bg-slate-100 hover:bg-slate-200 border-2 border-slate-300 font-display font-black text-2xl text-slate-900 active:scale-95">8</button>
+            <button type="button" onclick="enterPinDigit('9')" class="min-h-[60px] rounded-2xl bg-slate-100 hover:bg-slate-200 border-2 border-slate-300 font-display font-black text-2xl text-slate-900 active:scale-95">9</button>
+            <button type="button" onclick="clearPinDigits()" class="min-h-[60px] rounded-2xl bg-amber-100 hover:bg-amber-200 border-2 border-amber-300 font-extrabold text-sm text-amber-950 active:scale-95">Clear</button>
+            <button type="button" onclick="enterPinDigit('0')" class="min-h-[60px] rounded-2xl bg-slate-100 hover:bg-slate-200 border-2 border-slate-300 font-display font-black text-2xl text-slate-900 active:scale-95">0</button>
+            <button type="button" onclick="backspacePinDigit()" class="min-h-[60px] rounded-2xl bg-slate-200 hover:bg-slate-300 border-2 border-slate-300 font-extrabold text-lg text-slate-800 active:scale-95" aria-label="Backspace">
+              <i class="fa-solid fa-delete-left"></i>
+            </button>
+          </div>
+          <p class="text-center text-xs font-semibold text-slate-500">Default Manager PIN is <strong>1234</strong> (change anytime in Settings)</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================================================
+         DRAWER 2: MANAGER SETTINGS / PRICING GUIDE
+         ========================================================= -->
+    <div id="settingsDrawer" class="hidden absolute inset-0 bg-slate-900/60 z-50 flex flex-col justify-end">
+      <div class="bg-white rounded-t-3xl max-h-[94%] flex flex-col shadow-2xl border-t-4 border-slate-800">
+        <div class="p-5 border-b-2 border-slate-200 flex items-center justify-between bg-slate-900 text-white rounded-t-2xl">
+          <div class="flex items-center gap-3">
+            <i class="fa-solid fa-sliders text-2xl text-amber-400"></i>
+            <div>
+              <h2 class="font-display font-black text-xl">Manager Pricing Guide</h2>
+              <p class="text-xs font-semibold text-slate-300">Customize shop pricing rules (NZD)</p>
+            </div>
+          </div>
+          <button type="button" onclick="closeSettingsDrawer()" class="w-12 h-12 rounded-2xl bg-white/15 hover:bg-white/25 text-white text-xl flex items-center justify-center" aria-label="Close Settings">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <div class="p-5 overflow-y-auto space-y-5 flex-1">
+          <!-- 1. Approved Work Device Lock & Shift Hours Control -->
+          <div class="p-4 rounded-2xl bg-amber-50/90 border-2 border-amber-400 space-y-3.5">
+            <div class="flex items-center justify-between gap-2">
+              <span class="font-extrabold text-base text-slate-900 flex items-center gap-2">
+                <i class="fa-solid fa-tablet-screen-button text-amber-700"></i>
+                <span>Approved Work Device Lock</span>
+              </span>
+              <span id="thisDeviceStatusBadge" class="px-2.5 py-1 rounded-full bg-emerald-700 text-white text-[11px] font-black uppercase">
+                Approved
+              </span>
+            </div>
+
+            <div class="bg-white rounded-xl p-3 border-2 border-amber-300 flex items-center justify-between gap-2">
+              <div class="min-w-0">
+                <div class="text-[11px] font-extrabold uppercase tracking-wider text-slate-500">Current Device</div>
+                <div id="currentDeviceNameDisplay" class="font-display font-black text-sm sm:text-base text-slate-900 truncate">
+                  Shop Work Device
+                </div>
+              </div>
+              <button type="button" onclick="deauthorizeCurrentDevice()"
+                class="shrink-0 min-h-[44px] px-3 rounded-xl bg-red-50 hover:bg-red-100 border-2 border-red-300 text-red-800 font-extrabold text-xs flex items-center gap-1.5 active:scale-95">
+                <i class="fa-solid fa-ban"></i>
+                <span>Lock Device</span>
+              </button>
+            </div>
+
+            <div id="approvedDevicesListWrap" class="space-y-1.5">
+              <div class="text-xs font-extrabold text-slate-700">Approved Shop Devices:</div>
+              <div id="approvedDevicesList" class="space-y-1.5 max-h-36 overflow-y-auto"></div>
+            </div>
+
+            <div class="pt-2 border-t border-amber-300 space-y-2.5">
+              <label class="flex items-center justify-between gap-3 cursor-pointer">
+                <div>
+                  <div class="font-extrabold text-sm text-slate-900">Lock Outside Work Hours</div>
+                  <div class="text-xs font-semibold text-slate-600">Blocks pricing before/after shop shifts</div>
+                </div>
+                <input type="checkbox" id="enforceWorkHoursCheckbox" class="w-6 h-6 accent-emerald-700 shrink-0" />
+              </label>
+
+              <div class="grid grid-cols-2 gap-2.5">
+                <div>
+                  <label for="workStartInput" class="block text-[11px] font-extrabold text-slate-700 mb-1">Shift Start</label>
+                  <input type="time" id="workStartInput" value="08:00"
+                    class="w-full min-h-[44px] px-3 rounded-xl border-2 border-slate-300 bg-white font-extrabold text-sm text-slate-900" />
+                </div>
+                <div>
+                  <label for="workEndInput" class="block text-[11px] font-extrabold text-slate-700 mb-1">Shift End</label>
+                  <input type="time" id="workEndInput" value="17:30"
+                    class="w-full min-h-[44px] px-3 rounded-xl border-2 border-slate-300 bg-white font-extrabold text-sm text-slate-900" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 1B. Gemini AI Key (Supports new AQ.Ab8RN6... Auth Keys & AIzaSy... Keys) -->
+          <div class="p-4 rounded-2xl bg-purple-50/80 border-2 border-purple-300 space-y-3">
+            <div class="flex items-center justify-between gap-2">
+              <span class="font-extrabold text-base text-slate-900 flex items-center gap-2">
+                <i class="fa-solid fa-wand-magic-sparkles text-purple-700"></i>
+                <span>Gemini API Key</span>
+              </span>
+              <span id="apiKeyStatusBadge" class="px-2.5 py-1 rounded-full bg-slate-200 text-slate-700 text-[11px] font-black uppercase">
+                Not Set
+              </span>
+            </div>
+
+            <p class="text-xs font-semibold text-slate-700 leading-snug">
+              Paste your Google AI Studio key (starts with <strong>AQ.</strong> or <strong>AIza</strong>). Tap <strong>Test Key</strong>, then tap <strong>Save Settings</strong> below.
+            </p>
+
+            <div class="flex items-center gap-2">
+              <div class="relative flex-1">
+                <input type="password" id="geminiApiKeyInput" autocomplete="off" spellcheck="false"
+                  placeholder="AQ.Ab8RN6... or AIzaSy..."
+                  class="w-full min-h-[46px] pl-3.5 pr-11 rounded-xl border-2 border-slate-300 bg-white font-mono font-bold text-xs sm:text-sm text-slate-900" />
+                <button type="button" onclick="toggleApiKeyVisibility()"
+                  class="absolute right-1.5 top-1/2 -translate-y-1/2 w-9 h-9 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 flex items-center justify-center"
+                  aria-label="Show or hide API key">
+                  <i id="apiKeyEyeIcon" class="fa-solid fa-eye text-sm"></i>
+                </button>
+              </div>
+              <button type="button" id="testApiKeyBtn" onclick="testGeminiApiKey()"
+                class="shrink-0 min-h-[46px] px-3.5 rounded-xl bg-purple-700 hover:bg-purple-800 text-white font-extrabold text-xs flex items-center gap-1.5 active:scale-95 transition">
+                <i class="fa-solid fa-plug-circle-check"></i>
+                <span>Test Key</span>
+              </button>
+            </div>
+
+            <p id="apiKeyTestResultNote" class="hidden text-xs font-extrabold rounded-xl px-3 py-2 border"></p>
+          </div>
+
+          <!-- 2. Shop Branding: Logo, Name & Business Colour Sampler -->
+          <div class="p-4 rounded-2xl bg-emerald-50/70 border-2 border-slate-300 space-y-3.5">
+            <div class="font-extrabold text-base text-slate-900 flex items-center gap-2">
+              <i class="fa-solid fa-palette text-emerald-700"></i>
+              <span>Shop Logo &amp; Business Colours</span>
+            </div>
+
+            <div>
+              <label for="shopNameInput" class="block text-xs font-extrabold text-slate-700 mb-1">Business / Shop Name</label>
+              <input type="text" id="shopNameInput" maxlength="40" placeholder="Item Price Helper"
+                class="w-full min-h-[46px] px-3.5 rounded-xl border-2 border-slate-300 bg-white font-bold text-sm text-slate-900" />
+            </div>
+
+            <!-- Logo Upload -->
+            <div class="flex items-center justify-between gap-3 bg-white p-3 rounded-xl border-2 border-slate-200">
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="w-14 h-14 rounded-xl bg-slate-100 border border-slate-300 flex items-center justify-center overflow-hidden shrink-0">
+                  <img id="settingsLogoPreviewImg" src="" alt="Logo Preview" class="hidden w-full h-full object-contain p-1" />
+                  <i id="settingsLogoPlaceholderIcon" class="fa-solid fa-image text-slate-400 text-xl"></i>
+                </div>
+                <div class="min-w-0">
+                  <div class="font-extrabold text-xs text-slate-800">Header Business Logo</div>
+                  <div class="text-[11px] font-semibold text-slate-500">PNG, JPG, or SVG</div>
+                </div>
+              </div>
+              <div class="flex items-center gap-1.5 shrink-0">
+                <input type="file" id="logoUploadInput" accept="image/*" class="hidden" onchange="handleLogoUpload(event)" />
+                <button type="button" onclick="document.getElementById('logoUploadInput').click()"
+                  class="min-h-[42px] px-3 rounded-xl bg-slate-900 text-white font-extrabold text-xs">
+                  Upload Logo
+                </button>
+                <button type="button" id="removeLogoBtn" onclick="clearUploadedLogo()"
+                  class="hidden min-h-[42px] px-2.5 rounded-xl bg-red-50 border border-red-300 text-red-700 font-extrabold text-xs"
+                  aria-label="Remove Logo">
+                  <i class="fa-solid fa-trash-can"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Primary Business Colour Picker + Match From Image -->
+            <div class="space-y-2">
+              <label class="block text-xs font-extrabold text-slate-700">Top Bar &amp; Button Colour</label>
+              <div class="flex items-center gap-2">
+                <input type="color" id="brandColorPicker" value="#0D6E52" oninput="syncBrandColorFromPicker(this.value)"
+                  class="w-12 h-11 rounded-xl border-2 border-slate-300 bg-white p-1 cursor-pointer shrink-0" />
+                <input type="text" id="brandColorHexInput" value="#0D6E52" maxlength="7" onchange="syncBrandColorFromHex(this.value)"
+                  class="w-28 min-h-[44px] px-3 rounded-xl border-2 border-slate-300 bg-white font-mono font-extrabold text-sm uppercase text-slate-900" />
+                <input type="file" id="colorSampleInput" accept="image/*" class="hidden" onchange="handleColorSampleUpload(event)" />
+                <button type="button" onclick="document.getElementById('colorSampleInput').click()"
+                  class="flex-1 min-h-[44px] px-3 rounded-xl bg-white hover:bg-slate-100 border-2 border-slate-300 font-extrabold text-xs text-slate-800 flex items-center justify-center gap-1.5">
+                  <i class="fa-solid fa-eye-dropper text-emerald-700"></i>
+                  <span>Match from Image</span>
+                </button>
+              </div>
+
+              <div id="extractedSwatchesWrap" class="hidden pt-1 space-y-1">
+                <span class="block text-[11px] font-extrabold text-slate-600">Tap a detected colour swatch:</span>
+                <div id="extractedSwatchesList" class="flex flex-wrap gap-1.5"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. Shop Pricing Tier -->
+          <div class="p-4 rounded-2xl bg-slate-50 border-2 border-slate-300 space-y-3">
+            <div class="font-extrabold text-base text-slate-900 flex items-center gap-2">
+              <i class="fa-solid fa-tags text-brand-primary"></i>
+              <span>Shop Pricing Tier</span>
+            </div>
+
+            <div class="space-y-2">
+              <label class="flex items-center gap-3 p-3 rounded-xl bg-white border-2 border-slate-200 cursor-pointer">
+                <input type="radio" name="pricingTier" value="budget" class="w-5 h-5 accent-emerald-700" />
+                <div>
+                  <div class="font-extrabold text-sm text-slate-900">Budget Community</div>
+                  <div class="text-xs font-semibold text-slate-600">Low everyday prices for fast turnover</div>
+                </div>
+              </label>
+              <label class="flex items-center gap-3 p-3 rounded-xl bg-white border-2 border-slate-200 cursor-pointer">
+                <input type="radio" name="pricingTier" value="standard" checked class="w-5 h-5 accent-emerald-700" />
+                <div>
+                  <div class="font-extrabold text-sm text-slate-900">Standard Secondhand (Recommended)</div>
+                  <div class="text-xs font-semibold text-slate-600">Balanced NZ resource recovery shop values</div>
+                </div>
+              </label>
+              <label class="flex items-center gap-3 p-3 rounded-xl bg-white border-2 border-slate-200 cursor-pointer">
+                <input type="radio" name="pricingTier" value="boutique" class="w-5 h-5 accent-emerald-700" />
+                <div>
+                  <div class="font-extrabold text-sm text-slate-900">Boutique / Vintage</div>
+                  <div class="text-xs font-semibold text-slate-600">Higher pricing for top brands &amp; collectibles</div>
+                </div>
+              </label>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 pt-1">
+              <div>
+                <label for="minPriceInput" class="block text-xs font-extrabold text-slate-700 mb-1">Min Price ($ NZD)</label>
+                <input type="number" id="minPriceInput" min="1" max="100" value="2"
+                  class="w-full min-h-[46px] px-3 rounded-xl border-2 border-slate-300 bg-white font-extrabold text-base text-slate-900" />
+              </div>
+              <div>
+                <label for="maxPriceInput" class="block text-xs font-extrabold text-slate-700 mb-1">Max Price ($ NZD)</label>
+                <input type="number" id="maxPriceInput" min="10" max="2000" value="250"
+                  class="w-full min-h-[46px] px-3 rounded-xl border-2 border-slate-300 bg-white font-extrabold text-base text-slate-900" />
+              </div>
+            </div>
+
+            <div>
+              <label for="customRulesInput" class="block text-xs font-extrabold text-slate-700 mb-1">Custom Shop Pricing Instructions</label>
+              <textarea id="customRulesInput" rows="3"
+                class="w-full p-3 rounded-xl border-2 border-slate-300 bg-white font-semibold text-sm text-slate-900"></textarea>
+            </div>
+          </div>
+
+          <!-- 4. Shop Adaptive Price Learning Summary -->
+          <div class="p-4 rounded-2xl bg-blue-50/80 border-2 border-blue-300 space-y-2.5">
+            <div class="flex items-center justify-between gap-2">
+              <span class="font-extrabold text-base text-slate-900 flex items-center gap-2">
+                <i class="fa-solid fa-brain text-blue-700"></i>
+                <span>Shop Price Learning</span>
+              </span>
+              <button type="button" onclick="resetLearnedPricing()"
+                class="px-3 py-1.5 rounded-xl bg-white hover:bg-red-50 border border-slate-300 text-xs font-extrabold text-red-700">
+                Reset Memory
+              </button>
+            </div>
+            <p id="learnedPricingSummary" class="text-xs font-bold text-slate-700 leading-relaxed"></p>
+            <div id="learnedExamplesChips" class="flex flex-wrap gap-1.5"></div>
+          </div>
+
+          <!-- 5. Security, Audio & Full-Screen Controls -->
+          <div class="p-4 rounded-2xl bg-slate-50 border-2 border-slate-300 space-y-3.5">
+            <div class="font-extrabold text-base text-slate-900 flex items-center gap-2">
+              <i class="fa-solid fa-lock text-slate-700"></i>
+              <span>Security, Audio &amp; Display</span>
+            </div>
+
+            <label class="flex items-center justify-between gap-3 cursor-pointer">
+              <div>
+                <div class="font-extrabold text-sm text-slate-900">Require PIN to Adjust Tag Price</div>
+                <div class="text-xs font-semibold text-slate-600">Locks the -$ and +$ buttons on price tags</div>
+              </div>
+              <input type="checkbox" id="lockPriceAdjustCheckbox" checked class="w-6 h-6 accent-emerald-700 shrink-0" />
+            </label>
+
+            <label class="flex items-center justify-between gap-3 cursor-pointer">
+              <div>
+                <div class="font-extrabold text-sm text-slate-900">Auto-Speak Prompts Aloud</div>
+                <div class="text-xs font-semibold text-slate-600">Automatically reads sizes and prices aloud</div>
+              </div>
+              <input type="checkbox" id="autoSpeakCheckbox" class="w-6 h-6 accent-emerald-700 shrink-0" />
+            </label>
+
+            <div class="flex items-center justify-between gap-3 pt-1">
+              <div>
+                <label for="managerPinInput" class="block text-xs font-extrabold text-slate-700 mb-1">4-Digit Manager PIN</label>
+                <input type="text" id="managerPinInput" inputmode="numeric" maxlength="4" value="1234"
+                  class="w-32 min-h-[44px] px-3 rounded-xl border-2 border-slate-300 bg-white font-mono font-black text-lg tracking-widest text-slate-900" />
+              </div>
+              <button type="button" onclick="toggleBrowserFullscreen()"
+                class="min-h-[46px] px-4 rounded-xl bg-slate-200 hover:bg-slate-300 border-2 border-slate-400 font-extrabold text-xs text-slate-900 flex items-center gap-2">
+                <i class="fa-solid fa-expand"></i>
+                <span>Full Screen</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-4 border-t-2 border-slate-200 bg-slate-50 flex gap-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
+          <button type="button" onclick="closeSettingsDrawer()" class="min-h-[56px] px-5 rounded-2xl bg-white border-2 border-slate-300 text-slate-800 font-extrabold text-base">
+            Cancel
+          </button>
+          <button type="button" onclick="saveManagerSettings()" class="flex-1 min-h-[56px] rounded-2xl bg-brand-primary text-white font-display font-black text-lg shadow-md">
+            Save Settings
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- =========================================================
+         NON-BLOCKING TOAST BANNER
+         ========================================================= -->
+    <div id="toastBanner" class="hidden absolute bottom-6 left-1/2 -translate-x-1/2 z-50 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-2xl border-2 border-amber-400 flex items-center gap-2.5 max-w-[90%]">
+      <i class="fa-solid fa-circle-info text-amber-400"></i>
+      <span id="toastText" class="font-extrabold text-sm">Saved!</span>
+    </div>
+
+  </div>
+
+  <script>
+    (function () {
+      const apiKey = "";
+
+      const PREFERRED_GEMINI_MODELS = [
+        'gemini-3.5-flash-lite',
+        'gemini-flash-latest',
+        'gemini-3.8-flash',
+        'gemini-4-hydrogen',
+        'gemini-2.5-flash'
+      ];
+
+      const ANGLE_DEFINITIONS = [
+        { key: 'front', label: 'Front', hint: 'Main front view', icon: 'fa-box-open', color: 'emerald' },
+        { key: 'rear', label: 'Rear', hint: 'Back of item', icon: 'fa-rotate', color: 'blue' },
+        { key: 'left', label: 'Left Side', hint: 'Left profile', icon: 'fa-arrow-left', color: 'indigo' },
+        { key: 'right', label: 'Right Side', hint: 'Right profile', icon: 'fa-arrow-right', color: 'indigo' },
+        { key: 'top', label: 'Top', hint: 'Looking down', icon: 'fa-arrow-up', color: 'teal' },
+        { key: 'bottom', label: 'Bottom', hint: 'Base / underside', icon: 'fa-arrow-down', color: 'slate' },
+        { key: 'label', label: 'Brand / Label', hint: 'Tag, brand, model #', icon: 'fa-tag', color: 'purple', spanTwo: true }
+      ];
+
+      const appState = {
+        currentScreen: 'home',
+        activeAngleKey: 'front',
+        capturedAngles: {},
+        analysis: null,
+        selectedSize: null,
+        selectedCondition: null,
+        finalPrice: 0,
+        lastSavedLogId: null,
+        pricedToday: [],
+        deviceAuth: {
+          deviceId: '',
+          approved: false,
+          deviceName: '',
+          approvedAt: '',
+          sessionHoursOverride: false
+        },
+        approvedDevicesRegistry: [],
+        settings: {
+          tier: 'standard',
+          minPrice: 2,
+          maxPrice: 250,
+          customRules: 'Use whole NZ dollars under $20, and round to clean $5 intervals for items $20 and above. Never underprice quality brands, solid timber, wool, or working appliances.',
+          autoSpeak: false,
+          managerPin: '1234',
+          lockPriceAdjust: true,
+          shopName: 'Item Price Helper',
+          brandColor: '#0D6E52',
+          logoDataUrl: '',
+          enforceWorkHours: false,
+          workStart: '08:00',
+          workEnd: '17:30',
+          geminiApiKey: '',
+          preferredModel: ''
+        },
+        pinBuffer: '',
+        pendingPinAction: null,
+        learnedPricing: {
+          categoryMultipliers: {},
+          recentAdjustments: []
+        }
+      };
+
+      let db = null;
+      let auth = null;
+      let currentUser = null;
+      let fbFns = null;
+      const appId = typeof __app_id !== 'undefined' ? __app_id : 'item-price-helper-nz';
+
+      function injectStandaloneAppManifest() {
+        try {
+          const primaryHex = normalizeHexColor(appState.settings.brandColor || '#0D6E52');
+          const appName = (appState.settings.shopName || 'Item Price Helper').trim();
+          const iconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192"><rect width="192" height="192" rx="40" fill="${primaryHex}"/><path d="M52 46h44l48 48-44 44-48-48V46z" fill="#FFFFFF"/><circle cx="72" cy="66" r="9" fill="${primaryHex}"/></svg>`;
+          const iconDataUri = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(iconSvg);
+
+          const manifestObj = {
+            name: appName,
+            short_name: 'Price Helper',
+            start_url: window.location.href.split('#')[0],
+            display: 'standalone',
+            orientation: 'portrait',
+            background_color: '#F8FAFC',
+            theme_color: primaryHex,
+            icons: [
+              { src: iconDataUri, sizes: '192x192', type: 'image/svg+xml', purpose: 'any maskable' },
+              { src: iconDataUri, sizes: '512x512', type: 'image/svg+xml', purpose: 'any maskable' }
+            ]
+          };
+
+          const blob = new Blob([JSON.stringify(manifestObj)], { type: 'application/manifest+json' });
+          const manifestUrl = URL.createObjectURL(blob);
+          const linkEl = document.getElementById('pwaManifestLink');
+          if (linkEl) linkEl.setAttribute('href', manifestUrl);
+        } catch {}
+      }
+
+      function cleanApiKey(raw) {
+        return String(raw || '').trim().replace(/^["':\s]+|["':\s]+$/g, '');
+      }
+
+      function makeUniqueDeviceId() {
+        if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+          return 'dev_' + crypto.randomUUID();
+        }
+        return 'dev_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 10);
+      }
+
+      function openDeviceDatabase() {
+        return new Promise((resolve) => {
+          try {
+            if (!('indexedDB' in window)) {
+              resolve(null);
+              return;
+            }
+            const req = indexedDB.open('iph_work_device_db', 1);
+            req.onupgradeneeded = (e) => {
+              const idb = e.target.result;
+              if (!idb.objectStoreNames.contains('kv')) {
+                idb.createObjectStore('kv');
+              }
+            };
+            req.onsuccess = () => resolve(req.result);
+            req.onerror = () => resolve(null);
+          } catch {
+            resolve(null);
+          }
+        });
+      }
+
+      async function idbGet(key) {
+        try {
+          const idb = await openDeviceDatabase();
+          if (idb) {
+            return await new Promise((resolve) => {
+              const tx = idb.transaction('kv', 'readonly');
+              const req = tx.objectStore('kv').get(key);
+              req.onsuccess = () => resolve(req.result ?? null);
+              req.onerror = () => resolve(null);
+            });
+          }
+        } catch {}
+        try {
+          const raw = localStorage.getItem('iph_fallback_' + key);
+          return raw ? JSON.parse(raw) : null;
+        } catch {
+          return null;
+        }
+      }
+
+      async function idbSet(key, value) {
+        try {
+          const idb = await openDeviceDatabase();
+          if (idb) {
+            await new Promise((resolve) => {
+              const tx = idb.transaction('kv', 'readwrite');
+              tx.objectStore('kv').put(value, key);
+              tx.oncomplete = () => resolve();
+              tx.onerror = () => resolve();
+            });
+          }
+        } catch {}
+        try {
+          localStorage.setItem('iph_fallback_' + key, JSON.stringify(value));
+        } catch {}
+      }
+
+      async function initCloudAndDeviceState() {
+        let savedDeviceAuth = await idbGet('device_auth_v1');
+        if (!savedDeviceAuth || !savedDeviceAuth.deviceId) {
+          savedDeviceAuth = {
+            deviceId: makeUniqueDeviceId(),
+            approved: false,
+            deviceName: '',
+            approvedAt: ''
+          };
+          await idbSet('device_auth_v1', savedDeviceAuth);
+        }
+        appState.deviceAuth = {
+          ...appState.deviceAuth,
+          ...savedDeviceAuth,
+          sessionHoursOverride: false
+        };
+
+        const cachedSettings = await idbGet('settings_v3');
+        if (cachedSettings) {
+          appState.settings = { ...appState.settings, ...cachedSettings };
+        }
+
+        const cachedHistory = await idbGet('history_v3');
+        if (Array.isArray(cachedHistory)) {
+          const todayStr = new Date().toDateString();
+          appState.pricedToday = cachedHistory.filter(i => !i.dateStr || i.dateStr === todayStr);
+        }
+
+        const cachedLearning = await idbGet('learning_v3');
+        if (cachedLearning) {
+          appState.learnedPricing = {
+            categoryMultipliers: cachedLearning.categoryMultipliers || {},
+            recentAdjustments: Array.isArray(cachedLearning.recentAdjustments) ? cachedLearning.recentAdjustments : []
+          };
+        }
+
+        applyBrandTheme();
+        injectStandaloneAppManifest();
+        updateSettingsUI();
+        updateTodayBadge();
+        renderAngleSlotsGrid();
+        renderLearnedPricingUI();
+        evaluateWorkDeviceAccess();
+
+        if (typeof __firebase_config !== 'undefined' && __firebase_config) {
+          try {
+            const [appMod, authMod, fsMod] = await Promise.all([
+              import("https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js"),
+              import("https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js"),
+              import("https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js")
+            ]);
+
+            fbFns = {
+              doc: fsMod.doc,
+              setDoc: fsMod.setDoc,
+              deleteDoc: fsMod.deleteDoc,
+              onSnapshot: fsMod.onSnapshot,
+              collection: fsMod.collection
+            };
+
+            const firebaseConfig = JSON.parse(__firebase_config);
+            const app = appMod.initializeApp(firebaseConfig);
+            auth = authMod.getAuth(app);
+            db = fsMod.getFirestore(app);
+
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+              await authMod.signInWithCustomToken(auth, __initial_auth_token);
+            } else {
+              await authMod.signInAnonymously(auth);
+            }
+
+            currentUser = auth.currentUser;
+            authMod.onAuthStateChanged(auth, (u) => { currentUser = u; });
+
+            if (currentUser) {
+              startFirestoreListeners();
+            }
+          } catch (err) {
+            console.warn('Cloud sync unavailable, running with local work-device lock:', err);
+          }
+        }
+      }
+
+      function startFirestoreListeners() {
+        if (!db || !currentUser || !fbFns) return;
+
+        const configRef = fbFns.doc(db, 'artifacts', appId, 'public', 'data', 'shopConfig', 'main');
+        fbFns.onSnapshot(
+          configRef,
+          (snap) => {
+            if (snap.exists()) {
+              const data = snap.data();
+              if (data.settingsJson) {
+                try {
+                  const remoteSettings = JSON.parse(data.settingsJson);
+                  appState.settings = { ...appState.settings, ...remoteSettings };
+                  idbSet('settings_v3', appState.settings);
+                  applyBrandTheme();
+                  updateSettingsUI();
+                  evaluateWorkDeviceAccess();
+                } catch {}
+              }
+              if (data.learningJson) {
+                try {
+                  const remoteLearning = JSON.parse(data.learningJson);
+                  appState.learnedPricing = {
+                    categoryMultipliers: remoteLearning.categoryMultipliers || {},
+                    recentAdjustments: Array.isArray(remoteLearning.recentAdjustments) ? remoteLearning.recentAdjustments : []
+                  };
+                  idbSet('learning_v3', appState.learnedPricing);
+                  renderLearnedPricingUI();
+                } catch {}
+              }
+            }
+          },
+          (err) => console.warn('Shop config listener error:', err)
+        );
+
+        const devicesColRef = fbFns.collection(db, 'artifacts', appId, 'public', 'data', 'approvedDevices');
+        fbFns.onSnapshot(
+          devicesColRef,
+          (snap) => {
+            const list = [];
+            snap.forEach((d) => {
+              list.push({ id: d.id, ...d.data() });
+            });
+            appState.approvedDevicesRegistry = list;
+
+            const match = list.find(d => d.id === appState.deviceAuth.deviceId);
+            if (match && match.revoked) {
+              appState.deviceAuth.approved = false;
+              idbSet('device_auth_v1', {
+                deviceId: appState.deviceAuth.deviceId,
+                approved: false,
+                deviceName: appState.deviceAuth.deviceName,
+                approvedAt: ''
+              });
+              showToast('This device was locked by Manager');
+            } else if (match && match.approved) {
+              appState.deviceAuth.approved = true;
+              appState.deviceAuth.deviceName = match.deviceName || appState.deviceAuth.deviceName;
+            }
+
+            renderApprovedDevicesList();
+            evaluateWorkDeviceAccess();
+          },
+          (err) => console.warn('Approved devices listener error:', err)
+        );
+      }
+
+      async function persistData() {
+        await idbSet('settings_v3', appState.settings);
+        await idbSet('history_v3', appState.pricedToday);
+        await idbSet('learning_v3', appState.learnedPricing);
+
+        if (db && currentUser && fbFns) {
+          try {
+            const configRef = fbFns.doc(db, 'artifacts', appId, 'public', 'data', 'shopConfig', 'main');
+            await fbFns.setDoc(configRef, {
+              settingsJson: JSON.stringify(appState.settings),
+              learningJson: JSON.stringify(appState.learnedPricing),
+              updatedAt: new Date().toISOString()
+            }, { merge: true });
+          } catch (err) {
+            console.warn('Cloud config save skipped:', err);
+          }
+        }
+      }
+
+      function isWithinWorkHours() {
+        if (!appState.settings.enforceWorkHours) return true;
+        if (appState.deviceAuth.sessionHoursOverride) return true;
+
+        const now = new Date();
+        const currentMinutes = now.getHours() * 60 + now.getMinutes();
+
+        const [startH, startM] = String(appState.settings.workStart || '08:00').split(':').map(Number);
+        const [endH, endM] = String(appState.settings.workEnd || '17:30').split(':').map(Number);
+        const startTotal = (startH || 8) * 60 + (startM || 0);
+        const endTotal = (endH || 17) * 60 + (endM || 30);
+
+        return currentMinutes >= startTotal && currentMinutes <= endTotal;
+      }
+
+      function evaluateWorkDeviceAccess() {
+        const overlay = document.getElementById('workDeviceLockOverlay');
+        if (!overlay) return;
+
+        const authorizeCard = document.getElementById('managerAuthorizeCard');
+        const hoursOverrideCard = document.getElementById('hoursOverrideCard');
+        const heading = document.getElementById('lockScreenHeading');
+        const message = document.getElementById('lockScreenMessage');
+        const pill = document.getElementById('lockScreenPill');
+        const icon = document.getElementById('lockScreenMainIcon');
+
+        if (!appState.deviceAuth.approved) {
+          overlay.classList.remove('hidden');
+          authorizeCard?.classList.remove('hidden');
+          hoursOverrideCard?.classList.add('hidden');
+          if (pill) pill.textContent = 'Approved Work Devices Only';
+          if (heading) heading.textContent = 'Use a Shop Work Device';
+          if (message) {
+            message.textContent = 'Kia ora! This pricing tool is locked to official shop tablets and work phones so it cannot be used on personal devices or outside work.';
+          }
+          if (icon) icon.className = 'fa-solid fa-tablet-screen-button';
+          return;
+        }
+
+        if (!isWithinWorkHours()) {
+          overlay.classList.remove('hidden');
+          authorizeCard?.classList.add('hidden');
+          hoursOverrideCard?.classList.remove('hidden');
+          if (pill) pill.textContent = 'Shop Closed • Outside Shift Hours';
+          if (heading) heading.textContent = 'Available During Work Hours';
+          if (message) {
+            message.textContent = `This tool is active between ${appState.settings.workStart} and ${appState.settings.workEnd}. See you on your next shift!`;
+          }
+          if (icon) icon.className = 'fa-solid fa-clock';
+          return;
+        }
+
+        overlay.classList.add('hidden');
+        renderApprovedDevicesList();
+      }
+
+      function requestApproveThisDevice() {
+        const nameInput = document.getElementById('newDeviceNameInput');
+        const proposedName = (nameInput?.value || '').trim();
+        if (!proposedName) {
+          nameInput?.focus();
+          showToast('Please enter a name for this work device first (e.g., Shop Tablet 1)');
+          return;
+        }
+        openPinModal('approveDevice', `Enter Manager PIN to approve "${proposedName}"`);
+      }
+
+      function requestManagerHoursOverride() {
+        openPinModal('overrideHours', 'Enter Manager PIN to unlock outside work hours');
+      }
+
+      async function completeApproveThisDevice() {
+        const nameInput = document.getElementById('newDeviceNameInput');
+        const cleanName = (nameInput?.value || '').trim() || 'Shop Work Device';
+        const nowIso = new Date().toISOString();
+
+        appState.deviceAuth.approved = true;
+        appState.deviceAuth.deviceName = cleanName;
+        appState.deviceAuth.approvedAt = nowIso;
+
+        await idbSet('device_auth_v1', {
+          deviceId: appState.deviceAuth.deviceId,
+          approved: true,
+          deviceName: cleanName,
+          approvedAt: nowIso
+        });
+
+        if (db && currentUser && fbFns) {
+          try {
+            const devRef = fbFns.doc(db, 'artifacts', appId, 'public', 'data', 'approvedDevices', appState.deviceAuth.deviceId);
+            await fbFns.setDoc(devRef, {
+              deviceName: cleanName,
+              approved: true,
+              revoked: false,
+              approvedAt: nowIso,
+              userAgentHint: navigator.platform || 'Mobile/Tablet'
+            });
+          } catch (err) {
+            console.warn('Could not register device in cloud list:', err);
+          }
+        }
+
+        evaluateWorkDeviceAccess();
+        updateSettingsUI();
+        showToast(`Approved "${cleanName}"!`);
+      }
+
+      async function deauthorizeCurrentDevice() {
+        const devId = appState.deviceAuth.deviceId;
+        appState.deviceAuth.approved = false;
+
+        await idbSet('device_auth_v1', {
+          deviceId: devId,
+          approved: false,
+          deviceName: appState.deviceAuth.deviceName,
+          approvedAt: ''
+        });
+
+        if (db && currentUser && devId && fbFns) {
+          try {
+            const devRef = fbFns.doc(db, 'artifacts', appId, 'public', 'data', 'approvedDevices', devId);
+            await fbFns.setDoc(devRef, { approved: false, revoked: true }, { merge: true });
+          } catch {}
+        }
+
+        closeSettingsDrawer();
+        evaluateWorkDeviceAccess();
+        showToast('This device is now locked.');
+      }
+
+      async function revokeRemoteDevice(targetDeviceId) {
+        if (targetDeviceId === appState.deviceAuth.deviceId) {
+          await deauthorizeCurrentDevice();
+          return;
+        }
+        if (db && currentUser && fbFns) {
+          try {
+            const devRef = fbFns.doc(db, 'artifacts', appId, 'public', 'data', 'approvedDevices', targetDeviceId);
+            await fbFns.deleteDoc(devRef);
+            showToast('Work device removed');
+          } catch {
+            showToast('Could not remove device');
+          }
+        }
+      }
+
+      function renderApprovedDevicesList() {
+        const nameEl = document.getElementById('currentDeviceNameDisplay');
+        if (nameEl) {
+          nameEl.textContent = appState.deviceAuth.deviceName || 'This Work Device';
+        }
+
+        const badgeEl = document.getElementById('thisDeviceStatusBadge');
+        if (badgeEl) {
+          if (appState.deviceAuth.approved) {
+            badgeEl.textContent = 'Approved';
+            badgeEl.className = 'px-2.5 py-1 rounded-full bg-emerald-700 text-white text-[11px] font-black uppercase';
+          } else {
+            badgeEl.textContent = 'Locked';
+            badgeEl.className = 'px-2.5 py-1 rounded-full bg-red-700 text-white text-[11px] font-black uppercase';
+          }
+        }
+
+        const listEl = document.getElementById('approvedDevicesList');
+        if (!listEl) return;
+
+        const activeDevices = appState.approvedDevicesRegistry.filter(d => d.approved && !d.revoked);
+        if (activeDevices.length === 0) {
+          listEl.innerHTML = `
+            <div class="text-xs font-semibold text-slate-600 bg-white/80 rounded-xl px-3 py-2 border border-amber-200">
+              ${appState.deviceAuth.approved
+                ? `1 active device: <strong>${appState.deviceAuth.deviceName || 'This Work Device'}</strong>`
+                : 'No devices approved yet.'}
+            </div>
+          `;
+          return;
+        }
+
+        listEl.innerHTML = activeDevices.map(d => {
+          const isCurrent = d.id === appState.deviceAuth.deviceId;
+          return `
+            <div class="bg-white rounded-xl px-3 py-2 border border-amber-300 flex items-center justify-between gap-2">
+              <div class="min-w-0">
+                <div class="font-extrabold text-xs text-slate-900 truncate">
+                  ${d.deviceName || 'Work Device'} ${isCurrent ? '<span class="text-emerald-700">(This device)</span>' : ''}
+                </div>
+              </div>
+              <button type="button" onclick="revokeRemoteDevice('${d.id}')"
+                class="px-2.5 py-1 rounded-lg bg-red-50 hover:bg-red-100 border border-red-300 text-[11px] font-extrabold text-red-700 shrink-0">
+                Revoke
+              </button>
+            </div>
+          `;
+        }).join('');
+      }
+
+      function speakDeviceLockNotice() {
+        if (!appState.deviceAuth.approved) {
+          speakText('Kia ora! This pricing tool only works on approved shop tablets and work phones. Please use a shop work device, or ask your manager to unlock this device with their PIN.');
+        } else {
+          speakText(`The shop pricing tool is only open during work hours between ${appState.settings.workStart} and ${appState.settings.workEnd}.`);
+        }
+      }
+
+      function showScreen(screenName) {
+        appState.currentScreen = screenName;
+        const screens = {
+          home: 'screenHome',
+          loading: 'screenLoading',
+          size: 'screenSize',
+          condition: 'screenCondition',
+          finalTag: 'screenFinalTag'
+        };
+
+        Object.entries(screens).forEach(([key, id]) => {
+          const el = document.getElementById(id);
+          if (el) el.classList.toggle('hidden', key !== screenName);
+        });
+
+        const stepper = document.getElementById('stepIndicator');
+        if (stepper) {
+          if (screenName === 'home' || screenName === 'loading') {
+            stepper.classList.add('hidden');
+          } else {
+            stepper.classList.remove('hidden');
+            updateStepperPills(screenName);
+          }
+        }
+      }
+
+      function updateStepperPills(screenName) {
+        const activeClass = 'px-2 py-1 rounded-full bg-emerald-700 text-white shadow-sm';
+        const doneClass = 'px-2 py-1 rounded-full bg-emerald-100 text-emerald-900';
+        const idleClass = 'px-2 py-1 rounded-full bg-slate-100 text-slate-500';
+
+        const s1 = document.getElementById('step1Pill');
+        const s2 = document.getElementById('step2Pill');
+        const s3 = document.getElementById('step3Pill');
+        const s4 = document.getElementById('step4Pill');
+
+        if (s1) s1.className = doneClass;
+        if (s2) s2.className = screenName === 'size' ? activeClass : (screenName === 'condition' || screenName === 'finalTag' ? doneClass : idleClass);
+        if (s3) s3.className = screenName === 'condition' ? activeClass : (screenName === 'finalTag' ? doneClass : idleClass);
+        if (s4) s4.className = screenName === 'finalTag' ? activeClass : idleClass;
+      }
+
+      function resetToHome() {
+        if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+        appState.capturedAngles = {};
+        appState.analysis = null;
+        appState.selectedSize = null;
+        appState.selectedCondition = null;
+        appState.finalPrice = 0;
+        appState.lastSavedLogId = null;
+        renderAngleSlotsGrid();
+        showScreen('home');
+      }
+
+      function renderAngleSlotsGrid() {
+        const grid = document.getElementById('angleSlotsGrid');
+        if (!grid) return;
+
+        const capturedKeys = Object.keys(appState.capturedAngles);
+        const countEl = document.getElementById('capturedAnglesCount');
+        if (countEl) countEl.textContent = String(capturedKeys.length);
+
+        const clearBtn = document.getElementById('clearAllPhotosBtn');
+        if (clearBtn) clearBtn.classList.toggle('hidden', capturedKeys.length === 0);
+
+        const actionArea = document.getElementById('startResearchActionArea');
+        const subtextEl = document.getElementById('startResearchSubtext');
+        if (actionArea) {
+          actionArea.classList.toggle('hidden', capturedKeys.length === 0);
+          if (subtextEl && capturedKeys.length > 0) {
+            subtextEl.textContent = `Using ${capturedKeys.length} photo${capturedKeys.length === 1 ? '' : 's'} • Searches NZ values`;
+          }
+        }
+
+        grid.innerHTML = ANGLE_DEFINITIONS.map(def => {
+          const captured = appState.capturedAngles[def.key];
+          const spanClass = def.spanTwo ? 'col-span-2' : '';
+
+          if (captured) {
+            return `
+              <div class="${spanClass} relative rounded-2xl bg-emerald-50 border-2 border-emerald-600 p-2.5 shadow-sm flex items-center gap-3 min-h-[92px]">
+                <button type="button" onclick="triggerAngleCamera('${def.key}')"
+                  class="flex items-center gap-3 flex-1 min-w-0 text-left active:scale-98 transition">
+                  <img src="${captured.dataUrl}" alt="${def.label} photo"
+                    class="w-16 h-16 rounded-xl object-cover border-2 border-emerald-500 shrink-0" />
+                  <div class="min-w-0">
+                    <div class="flex items-center gap-1.5">
+                      <span class="w-5 h-5 rounded-full bg-emerald-600 text-white text-xs flex items-center justify-center shrink-0">
+                        <i class="fa-solid fa-check"></i>
+                      </span>
+                      <span class="font-display font-black text-base sm:text-lg text-emerald-950 truncate">${def.label}</span>
+                    </div>
+                    <span class="block text-xs font-bold text-emerald-800 mt-0.5">Tap to retake photo</span>
+                  </div>
+                </button>
+                <button type="button" onclick="removeCapturedAngle(event, '${def.key}')"
+                  class="w-11 h-11 rounded-xl bg-white hover:bg-red-50 border-2 border-slate-300 text-red-700 flex items-center justify-center shrink-0 active:scale-95"
+                  aria-label="Remove ${def.label} photo">
+                  <i class="fa-solid fa-trash-can text-sm"></i>
+                </button>
+              </div>
+            `;
+          }
+
+          const isPrimaryFront = def.key === 'front';
+          const cardStyle = isPrimaryFront
+            ? 'bg-emerald-50/70 hover:bg-emerald-100 border-2 border-emerald-600'
+            : (def.key === 'label'
+                ? 'bg-purple-50 hover:bg-purple-100 border-2 border-purple-400'
+                : 'bg-white hover:bg-slate-100 border-2 border-slate-300');
+
+          return `
+            <button type="button" onclick="triggerAngleCamera('${def.key}')"
+              class="${spanClass} ${cardStyle} rounded-2xl p-3.5 min-h-[92px] shadow-sm flex items-center gap-3 text-left transition active:scale-95">
+              <div class="w-12 h-12 rounded-xl bg-slate-900/10 text-slate-900 flex items-center justify-center text-xl shrink-0">
+                <i class="fa-solid ${def.icon}"></i>
+              </div>
+              <div class="min-w-0 flex-1">
+                <div class="font-display font-black text-base sm:text-lg text-slate-900 leading-tight">${def.label}</div>
+                <div class="text-xs font-semibold text-slate-600 truncate mt-0.5">${def.hint}</div>
+              </div>
+              <i class="fa-solid fa-camera text-slate-400 text-lg shrink-0"></i>
+            </button>
+          `;
+        }).join('');
+      }
+
+      function triggerAngleCamera(angleKey) {
+        appState.activeAngleKey = angleKey;
+        const input = document.getElementById('angleCameraInput');
+        if (input) {
+          input.value = '';
+          input.click();
+        }
+      }
+
+      function triggerGalleryUploadForSelectedAngle() {
+        const sel = document.getElementById('uploadAngleSelect');
+        appState.activeAngleKey = sel ? sel.value : 'front';
+        const input = document.getElementById('angleUploadInput');
+        if (input) {
+          input.value = '';
+          input.click();
+        }
+      }
+
+      async function handleAngleImageSelected(event) {
+        const file = event.target.files?.[0];
+        if (!file) return;
+        const angleKey = appState.activeAngleKey || 'front';
+
+        try {
+          const resized = await resizeImageFile(file, 1024);
+          appState.capturedAngles[angleKey] = resized;
+          renderAngleSlotsGrid();
+          const def = ANGLE_DEFINITIONS.find(d => d.key === angleKey);
+          showToast(`${def ? def.label : 'Item'} photo added!`);
+        } catch (err) {
+          console.error('Image read error:', err);
+          showToast('Could not read photo — please try again.');
+        }
+      }
+
+      function resizeImageFile(file, maxDimension = 1024) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+              let { width, height } = img;
+              if (width > maxDimension || height > maxDimension) {
+                if (width > height) {
+                  height = Math.round((height * maxDimension) / width);
+                  width = maxDimension;
+                } else {
+                  width = Math.round((width * maxDimension) / height);
+                  height = maxDimension;
+                }
+              }
+              const canvas = document.createElement('canvas');
+              canvas.width = width;
+              canvas.height = height;
+              const ctx = canvas.getContext('2d');
+              ctx.drawImage(img, 0, 0, width, height);
+              const dataUrl = canvas.toDataURL('image/jpeg', 0.84);
+              const base64 = dataUrl.split(',')[1];
+              resolve({ dataUrl, base64, mimeType: 'image/jpeg' });
+            };
+            img.onerror = reject;
+            img.src = e.target.result;
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+      }
+
+      function removeCapturedAngle(event, angleKey) {
+        if (event) event.stopPropagation();
+        delete appState.capturedAngles[angleKey];
+        renderAngleSlotsGrid();
+      }
+
+      function clearAllCapturedAngles() {
+        appState.capturedAngles = {};
+        renderAngleSlotsGrid();
+        showToast('All photos cleared');
+      }
+
+      function getPrimaryItemPhotoUrl() {
+        const priority = ['front', 'rear', 'left', 'right', 'top', 'bottom', 'label'];
+        for (const key of priority) {
+          if (appState.capturedAngles[key]?.dataUrl) {
+            return appState.capturedAngles[key].dataUrl;
+          }
+        }
+        return 'https://placehold.co/200x200/e2e8f0/0f172a?text=Item';
+      }
+
+      async function proceedToAnalysis() {
+        const keys = Object.keys(appState.capturedAngles);
+        if (keys.length === 0) {
+          showToast('Please take at least 1 photo first.');
+          return;
+        }
+
+        const strip = document.getElementById('loadingThumbnailsStrip');
+        if (strip) {
+          strip.innerHTML = ANGLE_DEFINITIONS
+            .filter(d => appState.capturedAngles[d.key])
+            .map(d => `
+              <div class="flex flex-col items-center">
+                <img src="${appState.capturedAngles[d.key].dataUrl}" alt="${d.label}"
+                  class="w-16 h-16 rounded-2xl object-cover border-2 border-brand-primary shadow-sm" />
+                <span class="text-[10px] font-extrabold text-slate-700 mt-1">${d.label}</span>
+              </div>
+            `).join('');
+        }
+
+        showScreen('loading');
+        const result = await analyzeItemWithGemini(appState.capturedAngles);
+        if (appState.currentScreen === 'loading') {
+          processAnalysisResult(result);
+        }
+      }
+
+      function requestManagerAccess() {
+        openPinModal('openSettings', 'Enter 4-digit PIN to unlock settings');
+      }
+
+      function requestClearTodayHistory() {
+        openPinModal('clearHistory', "Enter Manager PIN to clear today's log");
+      }
+
+      function handleProtectedPriceAdjust(direction) {
+        if (!appState.settings.lockPriceAdjust) {
+          adjustFinalPrice(direction);
+          return;
+        }
+        openPinModal(
+          direction > 0 ? 'adjustPlus' : 'adjustMinus',
+          'Enter Manager PIN to adjust item price'
+        );
+      }
+
+      function openPinModal(actionKey, subtitleText) {
+        appState.pendingPinAction = actionKey;
+        appState.pinBuffer = '';
+        const subEl = document.getElementById('pinModalSubtitle');
+        if (subEl && subtitleText) subEl.textContent = subtitleText;
+        document.getElementById('pinErrorMsg')?.classList.add('hidden');
+        updatePinDots();
+        document.getElementById('pinLockModal')?.classList.remove('hidden');
+      }
+
+      function closePinModal() {
+        appState.pinBuffer = '';
+        appState.pendingPinAction = null;
+        document.getElementById('pinLockModal')?.classList.add('hidden');
+      }
+
+      function updatePinDots() {
+        for (let i = 0; i < 4; i++) {
+          const dot = document.getElementById(`pinDot${i}`);
+          if (!dot) continue;
+          const filled = i < appState.pinBuffer.length;
+          dot.className = filled
+            ? 'w-5 h-5 rounded-full border-2 border-emerald-700 bg-emerald-600 scale-110 transition'
+            : 'w-5 h-5 rounded-full border-2 border-slate-400 bg-slate-100 transition';
+        }
+      }
+
+      function enterPinDigit(digit) {
+        if (appState.pinBuffer.length >= 4) return;
+        document.getElementById('pinErrorMsg')?.classList.add('hidden');
+        appState.pinBuffer += String(digit);
+        updatePinDots();
+
+        if (appState.pinBuffer.length === 4) {
+          const expectedPin = String(appState.settings.managerPin || '1234');
+          if (appState.pinBuffer === expectedPin) {
+            const action = appState.pendingPinAction;
+            closePinModal();
+            if (action === 'openSettings') openSettingsDrawer();
+            else if (action === 'clearHistory') clearTodayHistory();
+            else if (action === 'adjustPlus') adjustFinalPrice(1);
+            else if (action === 'adjustMinus') adjustFinalPrice(-1);
+            else if (action === 'approveDevice') completeApproveThisDevice();
+            else if (action === 'overrideHours') {
+              appState.deviceAuth.sessionHoursOverride = true;
+              evaluateWorkDeviceAccess();
+              showToast('Unlocked for this session');
+            }
+          } else {
+            appState.pinBuffer = '';
+            updatePinDots();
+            document.getElementById('pinErrorMsg')?.classList.remove('hidden');
+          }
+        }
+      }
+
+      function clearPinDigits() {
+        appState.pinBuffer = '';
+        document.getElementById('pinErrorMsg')?.classList.add('hidden');
+        updatePinDots();
+      }
+
+      function backspacePinDigit() {
+        appState.pinBuffer = appState.pinBuffer.slice(0, -1);
+        updatePinDots();
+      }
+
+      function speakText(text) {
+        if (!('speechSynthesis' in window)) {
+          showToast('Speech read-aloud is not supported on this browser.');
+          return;
+        }
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'en-NZ';
+        utterance.rate = 0.95;
+        window.speechSynthesis.speak(utterance);
+      }
+
+      function speakPhotoInstructions() {
+        speakText('Kia ora! Tap Front to take a photo of the front of the item. Then tap Rear, Left Side, Right Side, Top, Bottom, or Brand Label to add more photos before checking the price.');
+      }
+
+      function speakSizePrompt() {
+        if (!appState.analysis) return;
+        const a = appState.analysis;
+        const detectedMsg = a.detectedSizeFromLabel ? ` The label says size ${a.detectedSizeFromLabel}.` : '';
+        speakText(`Item found: ${a.itemName}.${detectedMsg} ${a.sizePrompt || 'What size is it?'} Tap a size button, or tap Skip if you are not sure.`);
+      }
+
+      function speakConditionOptions() {
+        if (!appState.analysis) return;
+        const a = appState.analysis;
+        speakText(
+          `${a.itemName}. Tap the condition that matches. ` +
+          `Poor condition is ${a.prices.fair} dollars. ` +
+          `Good everyday use is ${a.prices.good} dollars. ` +
+          `Like new condition is ${a.prices.likeNew} dollars.`
+        );
+      }
+
+      function speakFinalPriceTag() {
+        if (!appState.analysis) return;
+        const condText = document.getElementById('finalConditionBadge')?.textContent?.trim() || '';
+        const sizePart = appState.selectedSize ? `, size ${appState.selectedSize}` : '';
+        speakText(`Write this price tag for ${appState.analysis.itemName}${sizePart}, ${condText}: ${appState.finalPrice} dollars.`);
+      }
+
+      function setupMobileFullscreenExperience() {
+        const attemptFullscreenOnce = () => {
+          if (window.innerWidth <= 768 && document.documentElement.requestFullscreen && !document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(() => {});
+          }
+          document.removeEventListener('pointerdown', attemptFullscreenOnce);
+        };
+        document.addEventListener('pointerdown', attemptFullscreenOnce, { once: true });
+      }
+
+      function toggleBrowserFullscreen() {
+        if (!document.fullscreenElement) {
+          if (document.documentElement.requestFullscreen) {
+            document.documentElement.requestFullscreen().catch(() => {
+              showToast('Use "Add to Home Screen" on iPhone/iPad for full-screen app mode.');
+            });
+          } else {
+            showToast('Use "Add to Home Screen" on iPhone/iPad for full-screen app mode.');
+          }
+        } else if (document.exitFullscreen) {
+          document.exitFullscreen().catch(() => {});
+        }
+      }
+
+      function normalizeHexColor(input) {
+        const cleaned = String(input || '').trim();
+        if (/^#[0-9A-Fa-f]{6}$/.test(cleaned)) return cleaned.toUpperCase();
+        if (/^[0-9A-Fa-f]{6}$/.test(cleaned)) return '#' + cleaned.toUpperCase();
+        return '#0D6E52';
+      }
+
+      function shadeHexColor(hex, factor) {
+        const clean = normalizeHexColor(hex).slice(1);
+        const r = Math.max(0, Math.min(255, Math.round(parseInt(clean.slice(0, 2), 16) * factor)));
+        const g = Math.max(0, Math.min(255, Math.round(parseInt(clean.slice(2, 4), 16) * factor)));
+        const b = Math.max(0, Math.min(255, Math.round(parseInt(clean.slice(4, 6), 16) * factor)));
+        return '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('').toUpperCase();
+      }
+
+      function getReadableTextColor(hex) {
+        const clean = normalizeHexColor(hex).slice(1);
+        const r = parseInt(clean.slice(0, 2), 16);
+        const g = parseInt(clean.slice(2, 4), 16);
+        const b = parseInt(clean.slice(4, 6), 16);
+        const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+        return luminance > 0.68 ? '#0F172A' : '#FFFFFF';
+      }
+
+      function applyBrandTheme() {
+        const s = appState.settings;
+        const primaryHex = normalizeHexColor(s.brandColor || '#0D6E52');
+        const hoverHex = shadeHexColor(primaryHex, 0.84);
+        const borderHex = shadeHexColor(primaryHex, 0.65);
+        const headerTextHex = getReadableTextColor(primaryHex);
+
+        const root = document.documentElement;
+        root.style.setProperty('--brand-primary', primaryHex);
+        root.style.setProperty('--brand-primary-hover', hoverHex);
+        root.style.setProperty('--brand-primary-border', borderHex);
+        root.style.setProperty('--brand-header-text', headerTextHex);
+
+        const themeMeta = document.querySelector('meta[name="theme-color"]');
+        if (themeMeta) themeMeta.setAttribute('content', primaryHex);
+
+        const displayTitle = (s.shopName && s.shopName.trim()) ? s.shopName.trim() : 'Item Price Helper';
+        const headerTitleEl = document.getElementById('headerShopTitle');
+        if (headerTitleEl) headerTitleEl.textContent = displayTitle;
+        const lockTitleEl = document.getElementById('lockScreenShopTitle');
+        if (lockTitleEl) lockTitleEl.textContent = displayTitle;
+
+        const tagHeaderEl = document.getElementById('tagShopNameHeader');
+        if (tagHeaderEl) {
+          tagHeaderEl.textContent = displayTitle === 'Item Price Helper' ? 'Resource Recovery Shop' : displayTitle;
+        }
+
+        const headerLogoImg = document.getElementById('headerLogoImg');
+        const headerDefaultIcon = document.getElementById('headerDefaultIcon');
+        if (headerLogoImg && headerDefaultIcon) {
+          if (s.logoDataUrl) {
+            headerLogoImg.src = s.logoDataUrl;
+            headerLogoImg.classList.remove('hidden');
+            headerDefaultIcon.classList.add('hidden');
+          } else {
+            headerLogoImg.src = '';
+            headerLogoImg.classList.add('hidden');
+            headerDefaultIcon.classList.remove('hidden');
+          }
+        }
+      }
+
+      function syncBrandColorFromPicker(val) {
+        const hex = normalizeHexColor(val);
+        const hexInput = document.getElementById('brandColorHexInput');
+        if (hexInput) hexInput.value = hex;
+        appState.settings.brandColor = hex;
+        applyBrandTheme();
+      }
+
+      function syncBrandColorFromHex(val) {
+        const hex = normalizeHexColor(val);
+        const picker = document.getElementById('brandColorPicker');
+        const hexInput = document.getElementById('brandColorHexInput');
+        if (picker) picker.value = hex;
+        if (hexInput) hexInput.value = hex;
+        appState.settings.brandColor = hex;
+        applyBrandTheme();
+      }
+
+      async function handleLogoUpload(event) {
+        const file = event.target.files?.[0];
+        if (!file) return;
+        try {
+          const logoDataUrl = await resizeLogoFilePreserveAlpha(file, 360);
+          appState.settings.logoDataUrl = logoDataUrl;
+          updateLogoPreviewInSettings();
+          applyBrandTheme();
+
+          const palette = await extractColorsFromDataUrl(logoDataUrl);
+          renderExtractedSwatches(palette);
+          showToast('Logo uploaded! Tap Save Settings to keep.');
+        } catch {
+          showToast('Could not read logo image.');
+        }
+      }
+
+      function clearUploadedLogo() {
+        appState.settings.logoDataUrl = '';
+        const logoInput = document.getElementById('logoUploadInput');
+        if (logoInput) logoInput.value = '';
+        updateLogoPreviewInSettings();
+        applyBrandTheme();
+      }
+
+      function updateLogoPreviewInSettings() {
+        const previewImg = document.getElementById('settingsLogoPreviewImg');
+        const placeholderIcon = document.getElementById('settingsLogoPlaceholderIcon');
+        const removeBtn = document.getElementById('removeLogoBtn');
+        if (!previewImg || !placeholderIcon || !removeBtn) return;
+
+        if (appState.settings.logoDataUrl) {
+          previewImg.src = appState.settings.logoDataUrl;
+          previewImg.classList.remove('hidden');
+          placeholderIcon.classList.add('hidden');
+          removeBtn.classList.remove('hidden');
+        } else {
+          previewImg.src = '';
+          previewImg.classList.add('hidden');
+          placeholderIcon.classList.remove('hidden');
+          removeBtn.classList.add('hidden');
+        }
+      }
+
+      async function handleColorSampleUpload(event) {
+        const file = event.target.files?.[0];
+        if (!file) return;
+        try {
+          const sampleDataUrl = await resizeLogoFilePreserveAlpha(file, 240);
+          const palette = await extractColorsFromDataUrl(sampleDataUrl);
+          if (palette.length > 0) {
+            syncBrandColorFromPicker(palette[0]);
+            renderExtractedSwatches(palette);
+            showToast(`Matched business colour ${palette[0]}!`);
+          } else {
+            showToast('Could not detect colour from image.');
+          }
+        } catch {
+          showToast('Could not read colour example image.');
+        }
+      }
+
+      function renderExtractedSwatches(hexList) {
+        const wrap = document.getElementById('extractedSwatchesWrap');
+        const list = document.getElementById('extractedSwatchesList');
+        if (!wrap || !list || !hexList || hexList.length === 0) return;
+
+        wrap.classList.remove('hidden');
+        list.innerHTML = hexList.map(hex => `
+          <button type="button" onclick="syncBrandColorFromPicker('${hex}')"
+            class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white border-2 border-slate-300 hover:border-slate-800 shadow-sm active:scale-95">
+            <span class="w-5 h-5 rounded-md border border-black/20 inline-block" style="background-color: ${hex};"></span>
+            <span class="font-mono font-extrabold text-xs text-slate-800">${hex}</span>
+          </button>
+        `).join('');
+      }
+
+      function resizeLogoFilePreserveAlpha(file, maxDimension) {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+              let { width, height } = img;
+              if (width > maxDimension || height > maxDimension) {
+                if (width > height) {
+                  height = Math.round((height * maxDimension) / width);
+                  width = maxDimension;
+                } else {
+                  width = Math.round((width * maxDimension) / height);
+                  height = maxDimension;
+                }
+              }
+              const canvas = document.createElement('canvas');
+              canvas.width = width;
+              canvas.height = height;
+              const ctx = canvas.getContext('2d');
+              ctx.clearRect(0, 0, width, height);
+              ctx.drawImage(img, 0, 0, width, height);
+              resolve(canvas.toDataURL('image/png'));
+            };
+            img.onerror = reject;
+            img.src = e.target.result;
+          };
+          reader.onerror = reject;
+          reader.readAsDataURL(file);
+        });
+      }
+
+      function extractColorsFromDataUrl(dataUrl) {
+        return new Promise((resolve) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const size = 64;
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, size, size);
+            const { data } = ctx.getImageData(0, 0, size, size);
+
+            const buckets = {};
+            for (let i = 0; i < data.length; i += 4) {
+              const a = data[i + 3];
+              if (a < 140) continue;
+              const r = data[i];
+              const g = data[i + 1];
+              const b = data[i + 2];
+
+              const max = Math.max(r, g, b);
+              const min = Math.min(r, g, b);
+              if (max > 242 && min > 235) continue;
+              if (max < 22) continue;
+
+              const qr = Math.min(255, Math.round(r / 24) * 24);
+              const qg = Math.min(255, Math.round(g / 24) * 24);
+              const qb = Math.min(255, Math.round(b / 24) * 24);
+              const key = `${qr},${qg},${qb}`;
+              const saturationBoost = (max - min) > 35 ? 1.6 : 1.0;
+              buckets[key] = (buckets[key] || 0) + saturationBoost;
+            }
+
+            const sorted = Object.entries(buckets)
+              .sort((a, b) => b[1] - a[1])
+              .slice(0, 5)
+              .map(([rgb]) => {
+                const [r, g, b] = rgb.split(',').map(Number);
+                return '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('').toUpperCase();
+              });
+
+            resolve(sorted);
+          };
+          img.onerror = () => resolve([]);
+          img.src = dataUrl;
+        });
+      }
+
+      function getActiveGeminiApiKey() {
+        return cleanApiKey(appState.settings.geminiApiKey) || cleanApiKey(apiKey);
+      }
+
+      function toggleApiKeyVisibility() {
+        const input = document.getElementById('geminiApiKeyInput');
+        const icon = document.getElementById('apiKeyEyeIcon');
+        if (!input) return;
+        const isHidden = input.type === 'password';
+        input.type = isHidden ? 'text' : 'password';
+        if (icon) {
+          icon.className = isHidden ? 'fa-solid fa-eye-slash text-sm' : 'fa-solid fa-eye text-sm';
+        }
+      }
+
+      async function discoverAvailableGeminiModel(candidateKey) {
+        const listUrl = 'https://generativelanguage.googleapis.com/v1beta/models?pageSize=100';
+        const res = await fetch(listUrl, {
+          method: 'GET',
+          headers: { 'x-goog-api-key': candidateKey }
+        });
+
+        if (!res.ok) {
+          let errDetail = `HTTP ${res.status}`;
+          try {
+            const errJson = await res.json();
+            if (errJson?.error?.message) errDetail = errJson.error.message;
+          } catch {}
+          throw new Error(errDetail);
+        }
+
+        const data = await res.json();
+        const models = Array.isArray(data.models) ? data.models : [];
+        const supportedIds = models
+          .filter(m => Array.isArray(m.supportedGenerationMethods) && m.supportedGenerationMethods.includes('generateContent'))
+          .map(m => String(m.name || '').replace(/^models\//, ''))
+          .filter(id => id && !id.includes('embedding') && !id.includes('tts') && !id.includes('imagen'));
+
+        for (const pref of PREFERRED_GEMINI_MODELS) {
+          if (supportedIds.includes(pref)) return pref;
+        }
+
+        const flashMatch = supportedIds.find(id => id.includes('flash') && !id.includes('omni'));
+        return flashMatch || supportedIds[0] || 'gemini-3.8-flash';
+      }
+
+      function showApiKeyNote(message, isSuccess) {
+        const noteEl = document.getElementById('apiKeyTestResultNote');
+        if (!noteEl) return;
+        noteEl.textContent = message;
+        noteEl.className = isSuccess
+          ? 'text-xs font-extrabold rounded-xl px-3 py-2 border bg-emerald-100 border-emerald-400 text-emerald-950'
+          : 'text-xs font-extrabold rounded-xl px-3 py-2 border bg-red-50 border-red-300 text-red-900';
+        noteEl.classList.remove('hidden');
+      }
+
+      async function testGeminiApiKey() {
+        const inputEl = document.getElementById('geminiApiKeyInput');
+        const btnEl = document.getElementById('testApiKeyBtn');
+        const candidateKey = cleanApiKey(inputEl?.value) || cleanApiKey(apiKey);
+
+        if (inputEl && candidateKey) {
+          inputEl.value = candidateKey;
+        }
+
+        if (!candidateKey) {
+          showToast('Paste your Gemini API key first');
+          inputEl?.focus();
+          return;
+        }
+
+        if (btnEl) {
+          btnEl.disabled = true;
+          btnEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i><span>Testing...</span>';
+        }
+
+        try {
+          const chosenModel = await discoverAvailableGeminiModel(candidateKey);
+
+          appState.settings.preferredModel = chosenModel;
+          appState.settings.geminiApiKey = candidateKey;
+          await persistData();
+          updateSettingsUI();
+
+          showApiKeyNote(
+            `Connected! Key verified and saved (default model: ${chosenModel}). Note: Free Tier allows 20 requests/day—enable billing in Google AI Studio for high-volume shop use.`,
+            true
+          );
+          showToast('Gemini Key verified & saved!');
+        } catch (err) {
+          console.warn('API key test failed:', err);
+          const rawMsg = err?.message || 'Check your key in Google AI Studio.';
+          const isQuotaLimit = /quota exceeded|rate-limit|per day limit/i.test(rawMsg);
+          const friendlyMsg = isQuotaLimit
+            ? 'Free Tier daily limit (20 requests/day) reached on Google AI Studio. Wait for reset or attach a billing account in Google AI Studio for higher daily limits.'
+            : `Key test error: ${rawMsg}`;
+          showApiKeyNote(friendlyMsg, false);
+          showToast(isQuotaLimit ? 'Free Tier daily limit reached' : 'Key check failed — see message under key box');
+        } finally {
+          if (btnEl) {
+            btnEl.disabled = false;
+            btnEl.innerHTML = '<i class="fa-solid fa-plug-circle-check"></i><span>Test Key</span>';
+          }
+        }
+      }
+
+      async function analyzeItemWithGemini(capturedAngles) {
+        const activeKey = getActiveGeminiApiKey();
+        if (!activeKey) {
+          showToast('Add your Gemini API Key in Manager Settings (Gear icon)');
+          return buildFallbackEstimate();
+        }
+
+        const tierDescriptions = {
+          budget: 'Budget Community Shop (very affordable, accessible pricing for local community)',
+          standard: 'Standard Secondhand NZ Op-Shop (fair resource recovery pricing, typically 25%-45% of NZ new retail)',
+          boutique: 'Boutique / Curated Vintage (higher retail-aware value for quality brands, solid wood, wool, collectibles)'
+        };
+
+        const learningContext = buildLearningPromptContext();
+
+        const promptText = `
+You are an expert New Zealand secondhand retail valuer helping staff with intellectual disabilities price donated goods accurately at a resource recovery shop in New Zealand (NZD).
+You are provided with photos from specific angles of the SAME item. Inspect every angle carefully for brand names, material quality, completeness, and wear.
+
+CRITICAL ANTI-UNDERPRICING & PRICING RULES:
+1. Check current New Zealand retail prices and Trade Me secondhand values for this item/brand so we NEVER price valuable items too low.
+2. Shop Tier: ${tierDescriptions[appState.settings.tier]}.
+3. Minimum Price Floor: $${appState.settings.minPrice} NZD. Maximum Price Cap: $${appState.settings.maxPrice} NZD.
+4. Custom Shop Rules: ${appState.settings.customRules}
+5. Rounding Rule: Use whole NZ dollars under $20, and ALWAYS round to clean $5 intervals ($20, $25, $30, $35, etc.) for any price $20 and above (if an item is worth $18-$19, round up to $20).
+${learningContext}
+
+Respond ONLY with a valid JSON object (no markdown fences, no extra text) using this exact structure:
+{
+  "itemName": "Short plain-English name (2-4 words)",
+  "category": "Clothing | Footwear | Furniture | Kitchenware | Electronics | Tools | Toys & Games | Sports & Outdoors | Books & Media | Homeware",
+  "detectedBrand": "Brand name if visible on item or label, otherwise empty string",
+  "labelNote": "Short plain-English note if label/brand adds value (e.g. '100% Merino wool — warm and popular!'), otherwise empty string",
+  "retailEstimateNzd": 85,
+  "researchSummary": "1-2 short plain-English sentences explaining what it sells for new/secondhand in NZ so staff understand its value.",
+  "needsSize": true,
+  "sizePrompt": "What size is it?",
+  "sizeOptions": ["XS", "S", "M", "L", "XL", "XXL"],
+  "detectedSizeFromLabel": "",
+  "prices": {
+    "fair": 8,
+    "good": 15,
+    "likeNew": 25
+  },
+  "conditionTips": {
+    "fair": "Short plain-English note for poor condition (heavy wear/scuffs)",
+    "good": "Short plain-English note for good everyday condition",
+    "likeNew": "Short plain-English note for like-new condition"
+  }
+}
+        `.trim();
+
+        const parts = [{ text: promptText }];
+        for (const def of ANGLE_DEFINITIONS) {
+          const photo = capturedAngles[def.key];
+          if (photo && photo.base64) {
+            parts.push({ text: `Photo Angle: ${def.label} (${def.hint})` });
+            parts.push({
+              inlineData: {
+                mimeType: photo.mimeType || 'image/jpeg',
+                data: photo.base64
+              }
+            });
+          }
+        }
+
+        const callModelOnce = async (modelId, useSearchTool) => {
+          const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelId)}:generateContent`;
+          const payload = {
+            contents: [{ parts }],
+            generationConfig: { temperature: 0.2 }
+          };
+          if (useSearchTool) {
+            payload.tools = [{ google_search: {} }];
+          }
+          const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'x-goog-api-key': activeKey
+            },
+            body: JSON.stringify(payload)
+          });
+          if (!response.ok) {
+            const status = response.status;
+            const err = new Error(`API status ${status}`);
+            err.status = status;
+            throw err;
+          }
+          const data = await response.json();
+          const candidate = data?.candidates?.[0];
+          const rawText = candidate?.content?.parts?.map(p => p.text || '').join('\n') || '';
+          const cleanedJson = rawText.replace(/```json/gi, '').replace(/```/g, '').trim();
+          const jsonMatch = cleanedJson.match(/\{[\s\S]*\}/);
+          if (!jsonMatch) throw new Error('No JSON object returned');
+
+          const parsed = JSON.parse(jsonMatch[0]);
+          const chunks = candidate?.groundingMetadata?.groundingChunks || [];
+          const webSources = chunks
+            .filter(c => c.web && c.web.uri && c.web.title)
+            .slice(0, 3)
+            .map(c => ({ title: c.web.title, uri: c.web.uri }));
+
+          return normalizeAnalysisResult(parsed, webSources);
+        };
+
+        const modelQueue = [];
+        if (appState.settings.preferredModel) {
+          modelQueue.push(appState.settings.preferredModel);
+        }
+        for (const m of PREFERRED_GEMINI_MODELS) {
+          if (!modelQueue.includes(m)) modelQueue.push(m);
+        }
+
+        for (const modelId of modelQueue) {
+          try {
+            const groundedResult = await callModelOnce(modelId, true);
+            if (appState.settings.preferredModel !== modelId) {
+              appState.settings.preferredModel = modelId;
+              persistData();
+            }
+            return groundedResult;
+          } catch (groundedErr) {
+            try {
+              const standardResult = await callModelOnce(modelId, false);
+              if (appState.settings.preferredModel !== modelId) {
+                appState.settings.preferredModel = modelId;
+                persistData();
+              }
+              return standardResult;
+            } catch (stdErr) {
+              if (stdErr.status === 401 || stdErr.status === 403) {
+                break;
+              }
+            }
+          }
+        }
+
+        try {
+          const discovered = await discoverAvailableGeminiModel(activeKey);
+          appState.settings.preferredModel = discovered;
+          persistData();
+          return await callModelOnce(discovered, false);
+        } catch (finalErr) {
+          console.warn('Gemini research fallback triggered:', finalErr);
+          showToast('Offline/Quick estimate mode used — check API key in Settings');
+          return buildFallbackEstimate();
+        }
+      }
+
+      function normalizeAnalysisResult(raw, webSources = []) {
+        const category = raw.category || 'Homeware';
+        const catMultiplier = appState.learnedPricing.categoryMultipliers[category] || 1.0;
+
+        const scaleAndSnap = (val, fallback) => {
+          const num = Number(val) || fallback;
+          const adjusted = Math.round(num * catMultiplier);
+          return snapShopPrice(adjusted);
+        };
+
+        let fair = scaleAndSnap(raw.prices?.fair, 5);
+        let good = scaleAndSnap(raw.prices?.good, 12);
+        let likeNew = scaleAndSnap(raw.prices?.likeNew, 20);
+
+        if (good <= fair) good = snapShopPrice(fair + (fair >= 20 ? 5 : 3));
+        if (likeNew <= good) likeNew = snapShopPrice(good + (good >= 20 ? 5 : 4));
+
+        return {
+          itemName: raw.itemName || 'Secondhand Item',
+          category,
+          detectedBrand: raw.detectedBrand || '',
+          labelNote: raw.labelNote || '',
+          retailEstimateNzd: Number(raw.retailEstimateNzd) || 0,
+          researchSummary: raw.researchSummary || 'Checked NZ retail and secondhand values to ensure fair shop pricing.',
+          webSources,
+          needsSize: Boolean(raw.needsSize),
+          sizePrompt: raw.sizePrompt || 'What size is it?',
+          sizeOptions: Array.isArray(raw.sizeOptions) && raw.sizeOptions.length > 0
+            ? raw.sizeOptions.slice(0, 8)
+            : ['XS', 'S', 'M', 'L', 'XL', 'XXL'],
+          detectedSizeFromLabel: raw.detectedSizeFromLabel || '',
+          prices: { fair, good, likeNew },
+          conditionTips: {
+            fair: raw.conditionTips?.fair || 'Heavy wear, scuffs, or marks',
+            good: raw.conditionTips?.good || 'Clean, works well, normal use',
+            likeNew: raw.conditionTips?.likeNew || 'Barely used, looks almost new'
+          }
+        };
+      }
+
+      function buildFallbackEstimate() {
+        const tierBase = {
+          budget: { fair: 3, good: 6, likeNew: 12 },
+          standard: { fair: 5, good: 12, likeNew: 20 },
+          boutique: { fair: 10, good: 20, likeNew: 35 }
+        }[appState.settings.tier] || { fair: 5, good: 12, likeNew: 20 };
+
+        return normalizeAnalysisResult({
+          itemName: 'Donated Shop Item',
+          category: 'Homeware',
+          detectedBrand: '',
+          labelNote: '',
+          retailEstimateNzd: 45,
+          researchSummary: 'Standard NZ secondhand estimate applied. You can fine-tune the price on the tag screen.',
+          needsSize: false,
+          prices: tierBase,
+          conditionTips: {
+            fair: 'Heavy wear, scuffs, or missing parts',
+            good: 'Clean, solid, ready for everyday use',
+            likeNew: 'Excellent condition, looks nearly new'
+          }
+        });
+      }
+
+      function snapShopPrice(rawAmount) {
+        const minP = Number(appState.settings.minPrice) || 2;
+        const maxP = Number(appState.settings.maxPrice) || 250;
+        let price = Math.round(Number(rawAmount) || minP);
+
+        if (price >= 18 && price <= 20) {
+          price = 20;
+        } else if (price > 20) {
+          price = Math.round(price / 5) * 5;
+        }
+
+        price = Math.max(minP, Math.min(maxP, price));
+        if (price >= 18 && price <= 20) price = 20;
+        else if (price > 20) price = Math.round(price / 5) * 5;
+
+        return price;
+      }
+
+      function processAnalysisResult(analysis) {
+        appState.analysis = analysis;
+        appState.selectedSize = null;
+        appState.selectedCondition = null;
+
+        if (analysis.needsSize) {
+          renderSizeScreen();
+          showScreen('size');
+          if (appState.settings.autoSpeak) speakSizePrompt();
+        } else {
+          renderConditionScreen();
+          showScreen('condition');
+          if (appState.settings.autoSpeak) speakConditionOptions();
+        }
+      }
+
+      function renderSizeScreen() {
+        const a = appState.analysis;
+        document.getElementById('sizeItemImg').src = getPrimaryItemPhotoUrl();
+
+        const labelImgEl = document.getElementById('sizeLabelImg');
+        if (appState.capturedAngles.label) {
+          labelImgEl.src = appState.capturedAngles.label.dataUrl;
+          labelImgEl.classList.remove('hidden');
+        } else {
+          labelImgEl.classList.add('hidden');
+        }
+
+        document.getElementById('sizeItemTitle').textContent = a.itemName;
+        document.getElementById('sizeItemCategory').textContent = a.category;
+        document.getElementById('sizeQuestionHeading').textContent = a.sizePrompt || 'What size is it?';
+
+        const callout = document.getElementById('sizeDetectedCallout');
+        if (a.detectedSizeFromLabel) {
+          callout.classList.remove('hidden');
+          document.getElementById('sizeDetectedText').textContent =
+            `Tag says Size ${a.detectedSizeFromLabel} — tap to confirm!`;
+        } else {
+          callout.classList.add('hidden');
+        }
+
+        const grid = document.getElementById('sizeOptionsGrid');
+        grid.innerHTML = a.sizeOptions.map(sizeOpt => {
+          const isDetected = a.detectedSizeFromLabel &&
+            sizeOpt.toLowerCase() === a.detectedSizeFromLabel.toLowerCase();
+          const highlightClass = isDetected
+            ? 'bg-emerald-100 border-4 border-emerald-600 text-emerald-950 shadow-md'
+            : 'bg-white hover:bg-blue-50 border-2 border-slate-300 text-slate-900 shadow-sm';
+
+          return `
+            <button type="button" onclick="selectSize('${String(sizeOpt).replace(/'/g, "\\'")}')"
+              class="touch-target-lg rounded-2xl ${highlightClass} p-4 font-display font-black text-2xl flex flex-col items-center justify-center transition active:scale-95">
+              <span>${sizeOpt}</span>
+              ${isDetected ? '<span class="text-xs font-extrabold text-emerald-800 uppercase mt-0.5">On Label ✓</span>' : ''}
+            </button>
+          `;
+        }).join('');
+      }
+
+      function selectSize(sizeValue) {
+        appState.selectedSize = sizeValue;
+        renderConditionScreen();
+        showScreen('condition');
+        if (appState.settings.autoSpeak) speakConditionOptions();
+      }
+
+      function goBackToSize() {
+        renderSizeScreen();
+        showScreen('size');
+      }
+
+      function renderConditionScreen() {
+        const a = appState.analysis;
+        document.getElementById('condItemImg').src = getPrimaryItemPhotoUrl();
+
+        const labelImgEl = document.getElementById('condLabelImg');
+        if (appState.capturedAngles.label) {
+          labelImgEl.src = appState.capturedAngles.label.dataUrl;
+          labelImgEl.classList.remove('hidden');
+        } else {
+          labelImgEl.classList.add('hidden');
+        }
+
+        document.getElementById('condItemTitle').textContent = a.itemName;
+        document.getElementById('condCategoryBadge').textContent = a.category;
+
+        const sizeBadge = document.getElementById('condSizeBadge');
+        if (appState.selectedSize) {
+          sizeBadge.textContent = `Size: ${appState.selectedSize}`;
+          sizeBadge.classList.remove('hidden');
+        } else {
+          sizeBadge.classList.add('hidden');
+        }
+
+        const brandBadge = document.getElementById('condBrandBadge');
+        if (a.detectedBrand) {
+          brandBadge.textContent = a.detectedBrand;
+          brandBadge.classList.remove('hidden');
+        } else {
+          brandBadge.classList.add('hidden');
+        }
+
+        const photoCount = Object.keys(appState.capturedAngles).length;
+        document.getElementById('condAnglesCountBadge').textContent =
+          `${photoCount} Photo${photoCount === 1 ? '' : 's'}`;
+
+        const retailBadge = document.getElementById('condRetailEstimateBadge');
+        if (a.retailEstimateNzd > 0) {
+          retailBadge.textContent = `New Retail: ~$${a.retailEstimateNzd} NZD`;
+          retailBadge.classList.remove('hidden');
+        } else {
+          retailBadge.classList.add('hidden');
+        }
+        document.getElementById('condResearchSummary').textContent = a.researchSummary;
+
+        const sourcesWrap = document.getElementById('condSourcesWrap');
+        if (a.webSources && a.webSources.length > 0) {
+          sourcesWrap.classList.remove('hidden');
+          sourcesWrap.innerHTML = a.webSources.map(s => `
+            <a href="${s.uri}" target="_blank" rel="noopener noreferrer"
+              class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white border border-emerald-300 text-emerald-900 text-[11px] font-bold hover:bg-emerald-100 truncate max-w-[200px]">
+              <i class="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+              <span class="truncate">${s.title}</span>
+            </a>
+          `).join('');
+        } else {
+          sourcesWrap.classList.add('hidden');
+        }
+
+        const labelNoteBox = document.getElementById('condLabelNoteBox');
+        if (a.labelNote) {
+          labelNoteBox.classList.remove('hidden');
+          document.getElementById('condLabelNoteText').textContent = a.labelNote;
+        } else {
+          labelNoteBox.classList.add('hidden');
+        }
+
+        document.getElementById('priceFairDisplay').textContent = `$${a.prices.fair}`;
+        document.getElementById('priceGoodDisplay').textContent = `$${a.prices.good}`;
+        document.getElementById('priceLikeNewDisplay').textContent = `$${a.prices.likeNew}`;
+
+        document.getElementById('tipFair').textContent = a.conditionTips.fair;
+        document.getElementById('tipGood').textContent = a.conditionTips.good;
+        document.getElementById('tipLikeNew').textContent = a.conditionTips.likeNew;
+
+        const backToSizeBtn = document.getElementById('backToSizeBtn');
+        if (a.needsSize) {
+          backToSizeBtn.classList.remove('hidden');
+          backToSizeBtn.classList.add('flex');
+        } else {
+          backToSizeBtn.classList.add('hidden');
+          backToSizeBtn.classList.remove('flex');
+        }
+      }
+
+      function chooseCondition(conditionKey) {
+        appState.selectedCondition = conditionKey;
+        appState.finalPrice = appState.analysis.prices[conditionKey];
+
+        const conditionLabels = {
+          fair: 'Poor Condition',
+          good: 'Good Condition',
+          likeNew: 'Like New'
+        };
+
+        const logEntry = {
+          id: Date.now().toString(),
+          dateStr: new Date().toDateString(),
+          timeStr: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          itemName: appState.analysis.itemName,
+          category: appState.analysis.category,
+          brand: appState.analysis.detectedBrand || '',
+          size: appState.selectedSize || '',
+          conditionKey,
+          conditionLabel: conditionLabels[conditionKey],
+          aiSuggestedPrice: appState.finalPrice,
+          price: appState.finalPrice,
+          thumbUrl: getPrimaryItemPhotoUrl(),
+          labelThumbUrl: appState.capturedAngles.label ? appState.capturedAngles.label.dataUrl : ''
+        };
+
+        appState.lastSavedLogId = logEntry.id;
+        appState.pricedToday.unshift(logEntry);
+        persistData();
+        updateTodayBadge();
+
+        renderFinalTagScreen();
+        showScreen('finalTag');
+        if (appState.settings.autoSpeak) speakFinalPriceTag();
+      }
+
+      function renderFinalTagScreen() {
+        const a = appState.analysis;
+        document.getElementById('finalItemImg').src = getPrimaryItemPhotoUrl();
+
+        const labelImgEl = document.getElementById('finalLabelImg');
+        if (appState.capturedAngles.label) {
+          labelImgEl.src = appState.capturedAngles.label.dataUrl;
+          labelImgEl.classList.remove('hidden');
+        } else {
+          labelImgEl.classList.add('hidden');
+        }
+
+        document.getElementById('finalItemName').textContent = a.itemName;
+
+        const condBadge = document.getElementById('finalConditionBadge');
+        if (appState.selectedCondition === 'fair') {
+          condBadge.textContent = 'Poor Condition';
+          condBadge.className = 'px-4 py-1.5 rounded-full bg-amber-100 text-amber-950 border-2 border-amber-500 font-extrabold text-base';
+        } else if (appState.selectedCondition === 'likeNew') {
+          condBadge.textContent = 'Like New';
+          condBadge.className = 'px-4 py-1.5 rounded-full bg-emerald-100 text-emerald-950 border-2 border-emerald-600 font-extrabold text-base';
+        } else {
+          condBadge.textContent = 'Good Condition';
+          condBadge.className = 'px-4 py-1.5 rounded-full bg-blue-100 text-blue-950 border-2 border-blue-500 font-extrabold text-base';
+        }
+
+        const sizeBadge = document.getElementById('finalSizeBadge');
+        if (appState.selectedSize) {
+          sizeBadge.textContent = `Size: ${appState.selectedSize}`;
+          sizeBadge.classList.remove('hidden');
+        } else {
+          sizeBadge.classList.add('hidden');
+        }
+
+        const brandBadge = document.getElementById('finalBrandBadge');
+        if (a.detectedBrand) {
+          brandBadge.textContent = a.detectedBrand;
+          brandBadge.classList.remove('hidden');
+        } else {
+          brandBadge.classList.add('hidden');
+        }
+
+        updateFinalPriceDisplayAndButtons();
+      }
+
+      function updateFinalPriceDisplayAndButtons() {
+        document.getElementById('finalPriceBig').textContent = `$${appState.finalPrice.toFixed(2)}`;
+        const decBtn = document.getElementById('decreasePriceBtn');
+        const incBtn = document.getElementById('increasePriceBtn');
+        if (decBtn) decBtn.textContent = appState.finalPrice > 20 ? '-$5' : '-$1';
+        if (incBtn) incBtn.textContent = appState.finalPrice >= 20 ? '+$5' : '+$1';
+        const lockIcon = document.getElementById('priceAdjustLockIcon');
+        if (lockIcon) {
+          lockIcon.classList.toggle('hidden', !appState.settings.lockPriceAdjust);
+        }
+      }
+
+      function adjustFinalPrice(direction) {
+        const minP = Number(appState.settings.minPrice) || 1;
+        const maxP = Number(appState.settings.maxPrice) || 500;
+        let next = appState.finalPrice;
+
+        if (direction > 0) {
+          if (next >= 20) next += 5;
+          else if (next >= 17) next = 20;
+          else next += 1;
+        } else {
+          if (next > 20) next -= 5;
+          else next -= 1;
+        }
+
+        next = Math.max(minP, Math.min(maxP, next));
+        if (next === appState.finalPrice) return;
+
+        appState.finalPrice = next;
+        updateFinalPriceDisplayAndButtons();
+
+        const entry = appState.pricedToday.find(item => item.id === appState.lastSavedLogId);
+        if (entry) {
+          entry.price = next;
+          recordManualPriceAdjustment(entry);
+        }
+        persistData();
+        updateTodayBadge();
+      }
+
+      function backToConditionChoices() {
+        if (appState.lastSavedLogId) {
+          appState.pricedToday = appState.pricedToday.filter(i => i.id !== appState.lastSavedLogId);
+          appState.lastSavedLogId = null;
+          persistData();
+          updateTodayBadge();
+        }
+        renderConditionScreen();
+        showScreen('condition');
+      }
+
+      function recordManualPriceAdjustment(entry) {
+        if (!entry || !entry.aiSuggestedPrice || entry.aiSuggestedPrice <= 0) return;
+
+        const ratio = entry.price / entry.aiSuggestedPrice;
+        const clampedRatio = Math.max(0.5, Math.min(2.0, ratio));
+        const cat = entry.category || 'Homeware';
+        const prevMult = appState.learnedPricing.categoryMultipliers[cat] || 1.0;
+
+        const updatedMult = Number((prevMult * 0.75 + clampedRatio * 0.25).toFixed(3));
+        appState.learnedPricing.categoryMultipliers[cat] = updatedMult;
+
+        const existingIdx = appState.learnedPricing.recentAdjustments.findIndex(r => r.id === entry.id);
+        const record = {
+          id: entry.id,
+          itemName: entry.itemName,
+          category: cat,
+          brand: entry.brand || '',
+          condition: entry.conditionLabel,
+          aiPrice: entry.aiSuggestedPrice,
+          finalPrice: entry.price
+        };
+
+        if (entry.price === entry.aiSuggestedPrice) {
+          if (existingIdx !== -1) appState.learnedPricing.recentAdjustments.splice(existingIdx, 1);
+        } else if (existingIdx !== -1) {
+          appState.learnedPricing.recentAdjustments[existingIdx] = record;
+        } else {
+          appState.learnedPricing.recentAdjustments.unshift(record);
+          appState.learnedPricing.recentAdjustments = appState.learnedPricing.recentAdjustments.slice(0, 12);
+        }
+
+        renderLearnedPricingUI();
+      }
+
+      function buildLearningPromptContext() {
+        const mults = appState.learnedPricing.categoryMultipliers;
+        const recents = appState.learnedPricing.recentAdjustments;
+        const multEntries = Object.entries(mults).filter(([, m]) => Math.abs(m - 1.0) >= 0.04);
+
+        if (multEntries.length === 0 && recents.length === 0) return '';
+
+        const lines = ['6. Learned Shop Pricing Calibration (from manager/staff overrides):'];
+        if (multEntries.length > 0) {
+          const formattedMults = multEntries
+            .map(([cat, m]) => `${cat}: ${m > 1 ? '+' : ''}${Math.round((m - 1) * 100)}%`)
+            .join(', ');
+          lines.push(`   - Category tendencies: ${formattedMults}`);
+        }
+        if (recents.length > 0) {
+          const formattedExamples = recents
+            .slice(0, 6)
+            .map(r => `${r.itemName}${r.brand ? ` (${r.brand})` : ''} [${r.condition}]: shop priced at $${r.finalPrice} (instead of $${r.aiPrice})`)
+            .join('; ');
+          lines.push(`   - Recent actual shop prices: ${formattedExamples}`);
+        }
+        return lines.join('\n');
+      }
+
+      function renderLearnedPricingUI() {
+        const summaryEl = document.getElementById('learnedPricingSummary');
+        const chipsEl = document.getElementById('learnedExamplesChips');
+        if (!summaryEl || !chipsEl) return;
+
+        const recents = appState.learnedPricing.recentAdjustments;
+        const multEntries = Object.entries(appState.learnedPricing.categoryMultipliers)
+          .filter(([, m]) => Math.abs(m - 1.0) >= 0.04);
+
+        if (recents.length === 0 && multEntries.length === 0) {
+          summaryEl.textContent = 'No manual price tweaks recorded yet. Whenever you use -$ or +$ on a price tag, the app adapts future prices to match your shop!';
+          chipsEl.innerHTML = '';
+          return;
+        }
+
+        const catSummary = multEntries.length > 0
+          ? 'Adjusted categories: ' + multEntries.map(([c, m]) => `${c} (${m > 1 ? '+' : ''}${Math.round((m - 1) * 100)}%)`).join(', ') + '.'
+          : 'Tracking your manual tag adjustments for future items.';
+        summaryEl.textContent = catSummary;
+
+        chipsEl.innerHTML = recents.slice(0, 6).map(r => `
+          <span class="px-2.5 py-1 rounded-full bg-white border border-blue-300 text-[11px] font-extrabold text-slate-800">
+            ${r.itemName}: $${r.aiPrice} → $${r.finalPrice}
+          </span>
+        `).join('');
+      }
+
+      function resetLearnedPricing() {
+        appState.learnedPricing = {
+          categoryMultipliers: {},
+          recentAdjustments: []
+        };
+        persistData();
+        renderLearnedPricingUI();
+        showToast('Shop price learning memory cleared');
+      }
+
+      function updateTodayBadge() {
+        const badge = document.getElementById('todayCountBadge');
+        if (badge) badge.textContent = String(appState.pricedToday.length);
+      }
+
+      function openHistoryDrawer() {
+        const listEl = document.getElementById('historyList');
+        const totalVal = appState.pricedToday.reduce((sum, item) => sum + (Number(item.price) || 0), 0);
+        const summaryEl = document.getElementById('historyTotalSummary');
+        if (summaryEl) {
+          summaryEl.textContent = `${appState.pricedToday.length} item${appState.pricedToday.length === 1 ? '' : 's'} • Total value: $${totalVal.toFixed(2)} NZD`;
+        }
+
+        if (listEl) {
+          if (appState.pricedToday.length === 0) {
+            listEl.innerHTML = `
+              <div class="text-center py-10 text-slate-500 font-bold">
+                <i class="fa-solid fa-tag text-4xl mb-2 text-slate-300"></i>
+                <p>No items priced yet today.</p>
+              </div>
+            `;
+          } else {
+            listEl.innerHTML = appState.pricedToday.map(item => `
+              <div class="bg-slate-50 rounded-2xl p-3 border-2 border-slate-200 flex items-center justify-between gap-3">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <img src="${item.thumbUrl}" alt="${item.itemName}" class="w-14 h-14 rounded-xl object-cover border border-slate-300 shrink-0" />
+                  ${item.labelThumbUrl ? `<img src="${item.labelThumbUrl}" alt="Label" class="w-10 h-14 rounded-xl object-cover border border-blue-400 shrink-0" />` : ''}
+                  <div class="min-w-0">
+                    <div class="font-display font-black text-base text-slate-900 truncate">${item.itemName}</div>
+                    <div class="text-xs font-bold text-slate-600">
+                      ${item.conditionLabel}${item.size ? ` • Size ${item.size}` : ''}${item.brand ? ` • ${item.brand}` : ''} • ${item.timeStr}
+                    </div>
+                  </div>
+                </div>
+                <div class="font-display font-black text-2xl text-brand-primary shrink-0">
+                  $${Number(item.price).toFixed(0)}
+                </div>
+              </div>
+            `).join('');
+          }
+        }
+
+        document.getElementById('historyDrawer')?.classList.remove('hidden');
+      }
+
+      function closeHistoryDrawer() {
+        document.getElementById('historyDrawer')?.classList.add('hidden');
+      }
+
+      function clearTodayHistory() {
+        appState.pricedToday = [];
+        persistData();
+        updateTodayBadge();
+        openHistoryDrawer();
+        showToast("Today's log cleared");
+      }
+
+      function openSettingsDrawer() {
+        updateSettingsUI();
+        renderLearnedPricingUI();
+        document.getElementById('settingsDrawer')?.classList.remove('hidden');
+      }
+
+      function closeSettingsDrawer() {
+        document.getElementById('settingsDrawer')?.classList.add('hidden');
+      }
+
+      function updateSettingsUI() {
+        const s = appState.settings;
+        const radio = document.querySelector(`input[name="pricingTier"][value="${s.tier}"]`);
+        if (radio) radio.checked = true;
+
+        const setVal = (id, val) => {
+          const el = document.getElementById(id);
+          if (el) el.value = val;
+        };
+        const setChecked = (id, boolVal) => {
+          const el = document.getElementById(id);
+          if (el) el.checked = Boolean(boolVal);
+        };
+
+        setVal('minPriceInput', s.minPrice);
+        setVal('maxPriceInput', s.maxPrice);
+        setVal('customRulesInput', s.customRules);
+        setChecked('autoSpeakCheckbox', s.autoSpeak);
+        setVal('managerPinInput', s.managerPin || '1234');
+        setChecked('lockPriceAdjustCheckbox', s.lockPriceAdjust !== false);
+        setChecked('enforceWorkHoursCheckbox', s.enforceWorkHours);
+        setVal('workStartInput', s.workStart || '08:00');
+        setVal('workEndInput', s.workEnd || '17:30');
+        setVal('geminiApiKeyInput', cleanApiKey(s.geminiApiKey));
+
+        const keyBadge = document.getElementById('apiKeyStatusBadge');
+        if (keyBadge) {
+          if (cleanApiKey(s.geminiApiKey)) {
+            keyBadge.textContent = 'Key Saved ✓';
+            keyBadge.className = 'px-2.5 py-1 rounded-full bg-emerald-700 text-white text-[11px] font-black uppercase';
+          } else {
+            keyBadge.textContent = 'Not Set';
+            keyBadge.className = 'px-2.5 py-1 rounded-full bg-slate-200 text-slate-700 text-[11px] font-black uppercase';
+          }
+        }
+
+        const brandHex = normalizeHexColor(s.brandColor || '#0D6E52');
+        setVal('shopNameInput', s.shopName || 'Item Price Helper');
+        setVal('brandColorPicker', brandHex);
+        setVal('brandColorHexInput', brandHex);
+
+        updateLogoPreviewInSettings();
+        renderApprovedDevicesList();
+
+        const tierNames = {
+          budget: 'Budget Community • NZD',
+          standard: 'Standard Secondhand • NZD',
+          boutique: 'Boutique Vintage • NZD'
+        };
+        const tierBadgeEl = document.getElementById('shopTierBadge');
+        if (tierBadgeEl) {
+          tierBadgeEl.textContent = tierNames[s.tier] || 'Standard Secondhand • NZD';
+        }
+      }
+
+      function saveManagerSettings() {
+        const selectedTier = document.querySelector('input[name="pricingTier"]:checked')?.value || 'standard';
+        const minP = Math.max(1, Number(document.getElementById('minPriceInput')?.value) || 2);
+        const maxP = Math.max(minP + 1, Number(document.getElementById('maxPriceInput')?.value) || 250);
+        const customRules = document.getElementById('customRulesInput')?.value.trim() || '';
+        const autoSpeak = Boolean(document.getElementById('autoSpeakCheckbox')?.checked);
+        const rawPin = (document.getElementById('managerPinInput')?.value || '').replace(/\D/g, '');
+        const managerPin = rawPin.length === 4 ? rawPin : (appState.settings.managerPin || '1234');
+        const lockPriceAdjust = Boolean(document.getElementById('lockPriceAdjustCheckbox')?.checked);
+        const enforceWorkHours = Boolean(document.getElementById('enforceWorkHoursCheckbox')?.checked);
+        const workStart = document.getElementById('workStartInput')?.value || '08:00';
+        const workEnd = document.getElementById('workEndInput')?.value || '17:30';
+        const shopName = document.getElementById('shopNameInput')?.value.trim() || 'Item Price Helper';
+        const brandColor = normalizeHexColor(document.getElementById('brandColorHexInput')?.value || '#0D6E52');
+        const geminiApiKey = cleanApiKey(document.getElementById('geminiApiKeyInput')?.value);
+
+        if (rawPin.length !== 4) {
+          showToast('PIN must be 4 digits — kept previous PIN');
+        }
+
+        appState.settings = {
+          ...appState.settings,
+          tier: selectedTier,
+          minPrice: minP,
+          maxPrice: maxP,
+          customRules,
+          autoSpeak,
+          managerPin,
+          lockPriceAdjust,
+          enforceWorkHours,
+          workStart,
+          workEnd,
+          shopName,
+          brandColor,
+          geminiApiKey
+        };
+
+        persistData();
+        applyBrandTheme();
+        injectStandaloneAppManifest();
+        updateSettingsUI();
+        evaluateWorkDeviceAccess();
+        closeSettingsDrawer();
+        showToast('Shop branding & settings saved!');
+      }
+
+      let toastTimer = null;
+      function showToast(message) {
+        const banner = document.getElementById('toastBanner');
+        const textEl = document.getElementById('toastText');
+        if (!banner || !textEl) return;
+
+        textEl.textContent = message;
+        banner.classList.remove('hidden');
+        if (toastTimer) clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => {
+          banner.classList.add('hidden');
+        }, 2800);
+      }
+
+      Object.assign(window, {
+        resetToHome,
+        openHistoryDrawer,
+        closeHistoryDrawer,
+        requestClearTodayHistory,
+        requestManagerAccess,
+        speakPhotoInstructions,
+        handleAngleImageSelected,
+        clearAllCapturedAngles,
+        triggerAngleCamera,
+        removeCapturedAngle,
+        triggerGalleryUploadForSelectedAngle,
+        proceedToAnalysis,
+        speakSizePrompt,
+        selectSize,
+        showScreen,
+        speakConditionOptions,
+        chooseCondition,
+        goBackToSize,
+        speakFinalPriceTag,
+        handleProtectedPriceAdjust,
+        backToConditionChoices,
+        closePinModal,
+        enterPinDigit,
+        clearPinDigits,
+        backspacePinDigit,
+        closeSettingsDrawer,
+        handleLogoUpload,
+        clearUploadedLogo,
+        handleColorSampleUpload,
+        syncBrandColorFromPicker,
+        syncBrandColorFromHex,
+        toggleBrowserFullscreen,
+        resetLearnedPricing,
+        saveManagerSettings,
+        requestApproveThisDevice,
+        requestManagerHoursOverride,
+        deauthorizeCurrentDevice,
+        revokeRemoteDevice,
+        speakDeviceLockNotice,
+        toggleApiKeyVisibility,
+        testGeminiApiKey
+      });
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+          initCloudAndDeviceState();
+          setupMobileFullscreenExperience();
+          setInterval(evaluateWorkDeviceAccess, 60000);
+        });
+      } else {
+        initCloudAndDeviceState();
+        setupMobileFullscreenExperience();
+        setInterval(evaluateWorkDeviceAccess, 60000);
+      }
+    })();
+  </script>
+</body>
+</html>
